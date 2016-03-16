@@ -48,6 +48,10 @@ Step 2.Go to folder "Download", put the file(s) to 100MB of the SD Card whit DD 
 
 Overview
 --------
+
+ref. from https://github.com/loboris/OrangePI-Kernel.git
+Thanks Boris Lovosevic
+
 You may go to http://www.banana-pi.org to download Ubuntu15.10 images and burn them into the Sdcard to see the architecture.
 
 
