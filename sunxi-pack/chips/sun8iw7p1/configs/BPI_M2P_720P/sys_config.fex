@@ -275,7 +275,7 @@ uart_rts        = port:PG08<2><1><default><default>
 uart_cts        = port:PG09<2><1><default><default>
 
 [uart2]
-uart_used       = 0
+uart_used       = 1
 uart_port       = 2
 uart_type       = 4
 uart_tx         = port:PA00<2><1><default><default>
@@ -381,13 +381,13 @@ standby_led     = "gpio_pin_10"
 ;----------------------------------------------------------------------------------
 [ths_para]
 ths_used            = 1
-ths_trip1_count     = 5
-ths_trip1_0         = 75
-ths_trip1_1         = 85
-ths_trip1_2         = 90
-ths_trip1_3         = 100
-ths_trip1_4         = 105
-ths_trip1_5         = 0
+ths_trip1_count     = 6
+ths_trip1_0         = 60
+ths_trip1_1         = 75
+ths_trip1_2         = 85
+ths_trip1_3         = 90
+ths_trip1_4         = 95
+ths_trip1_5         = 100
 ths_trip1_6         = 0
 ths_trip1_7         = 0
 ths_trip1_0_min     = 0
@@ -399,9 +399,9 @@ ths_trip1_2_max     = 3
 ths_trip1_3_min     = 3
 ths_trip1_3_max     = 4
 ths_trip1_4_min     = 4
-ths_trip1_4_max     = 4
-ths_trip1_5_min     = 0
-ths_trip1_5_max     = 0
+ths_trip1_4_max     = 5
+ths_trip1_5_min     = 5
+ths_trip1_5_max     = 5
 ths_trip1_6_min     = 0
 ths_trip1_6_max     = 0
 ths_trip2_count     = 1
@@ -410,12 +410,13 @@ ths_trip2_0         = 105
 ;cooler_table  cooler_count <=32
 ;----------------------------------------------------------------------------------
 [cooler_table]
-cooler_count = 5
+cooler_count = 6
 cooler0 = "1200000 4 4294967295 0"
-cooler1 = "1200000 3 4294967295 0"
-cooler2 = "1200000 2 4294967295 0"
-cooler3 = "1200000 1 4294967295 0"
-cooler4 =  "504000 1 4294967295 0"
+cooler1 = "912000 4 4294967295 0"
+cooler2 = "720000 4 4294967295 0"
+cooler3 = "648000 4 4294967295 0"
+cooler4 = "480000 2 4294967295 0"
+cooler5 = "240000 1 4294967295 0"
 
 
 [nand0_para]
@@ -621,9 +622,9 @@ vip_dev0_lane            = 4
 vip_dev0_twi_id          = 2
 vip_dev0_twi_addr        = 0x78
 vip_dev0_isp_used        = 1
-vip_dev0_fmt             = 1
+vip_dev0_fmt             = 0
 vip_dev0_stby_mode       = 1
-vip_dev0_vflip           = 0
+vip_dev0_vflip           = 1
 vip_dev0_hflip           = 0
 vip_dev0_iovdd           = ""
 vip_dev0_iovdd_vol       = 2800000
@@ -1121,38 +1122,16 @@ ir_tx               = port:PH07<2><default><default><default>
 ;----------------------------------------------------------------------------------
 [dvfs_table]
 pmuic_type = 0
-pmu_gpio0         = port:PL06<1><1><2><1>
-pmu_level0        = 11300
-pmu_level1        = 01100
-;extremity_freq = 1344000000
+pmu_gpio0 = port:PL06<1><1><2><1>
+pmu_level0 = 11300
+pmu_level1 = 1100
 max_freq = 1200000000
-min_freq = 480000000
-boot_freq = 1008000000
-LV_count = 8
-
+min_freq = 648000000
+LV_count = 2
 LV1_freq = 1200000000
 LV1_volt = 1300
-
-LV2_freq = 1008000000
-LV2_volt = 1200
-
-LV3_freq = 0
-LV3_volt = 1100
-
-LV4_freq = 0
-LV4_volt = 1100
-
-LV5_freq = 0
-LV5_volt = 1100
-
-LV6_freq = 0
-LV6_volt = 1100
-
-LV7_freq = 0
-LV7_volt = 1100
-
-LV8_freq = 0
-LV8_volt = 1100
+LV2_freq = 648000000
+LV2_volt = 1300
 
 [gpu_dvfs_table]
 
