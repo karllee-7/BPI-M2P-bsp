@@ -7,7 +7,7 @@ MALI_UMP_ROOT=DX910-SW-99002-r4p0-00rel0_modify/driver/src/devicedrv/ump
 MALI_EGL_ROOT=DX910-SW-99002-r4p0-00rel0_modify/driver/src/egl/x11/drm_module/mali_drm
 
 #BPI-M2P
-KERNEL_VERSION=3.4.39-02-lobo
+KERNEL_VERSION=3.4.39-BPI-M2P-Kernel
 LICHEE_PLATFORM=linux
 LICHEE_MOD_DIR=$(LICHEE_KDIR)/output/lib/modules/$(KERNEL_VERSION)
 
