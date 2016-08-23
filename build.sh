@@ -18,7 +18,9 @@ cp_download_files()
         cp $pack_out/env.fex $download/
 #        cp $pack_out/boot.fex $download/
         cp -r linux-sunxi/output/lib/modules/* $download/lib/modules/
-        cp -r linux-sunxi/arch/arm/boot/uImage $download/lib/modules/3.4.*
+        cp -r linux-sunxi/arch/arm/boot/uImage $download/
+
+	fex2bin sunxi-pack/chips/sun8iw7p1/configs/$BOARD/sys_config.fex $download/script.bin
 }
 
 echo "=========================================="
