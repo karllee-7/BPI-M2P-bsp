@@ -87,7 +87,7 @@ led_state = 0
 ;		PH06  : 系统显示LED GPIO
 ;-------------------------------------------------------------------------------
 [boot_init_gpio]
-used	=	1
+used	=  0
 gpio0	=  port:PL10<1><default><default><1>
 gpio1	=  port:PA15<1><default><default><1>
 
@@ -97,9 +97,9 @@ gpio1	=  port:PA15<1><default><default><1>
 ;	recovery_key ： 按键配置  （例如：recovery_key= port:PH16<0><default>）
 ;----------------------------------------------------------------------------------
 [recovery_para]
-used =	1
+used =	0
 mode =	2
-recovery_key = port:PL01<0><default><default><default>
+recovery_key = port:PL03<0><default><default><default>
 
 
 ;---------------------------------------------------------------------------------------------------------
@@ -322,8 +322,8 @@ modalias      = "spidev"
 max_speed_hz  = 33000000
 bus_num       = 0
 chip_select   = 0
-mode          = 0
-full_duplex   = 1
+mode          = 3
+full_duplex   = 0
 manual_cs     = 0
 
 ;----------------------------------------------------------------------------------
@@ -336,37 +336,36 @@ gpio_num        = 29
 gpio_pin_1      = port:PA12<1><default><default><0>
 gpio_pin_2      = port:PA11<1><default><default><0>
 gpio_pin_3      = port:PA06<1><default><default><0>
-gpio_pin_4      = port:PA13<1><default><default><0>
-gpio_pin_5      = port:PA14<1><default><default><0>
-gpio_pin_6      = port:PA01<1><default><default><0>
-gpio_pin_7      = port:PA16<1><default><default><0>
-gpio_pin_8      = port:PA00<1><default><default><0>
-gpio_pin_9      = port:PA03<1><default><default><0>
-gpio_pin_10     = port:PA15<1><default><default><0>
-gpio_pin_11     = port:PC04<1><default><default><0>
-gpio_pin_12     = port:PC00<1><default><default><0>
-gpio_pin_13     = port:PC01<1><default><default><0>
-gpio_pin_14     = port:PA02<1><default><default><0>
-gpio_pin_15     = port:PC02<1><default><default><0>
-gpio_pin_16     = port:PC03<1><default><default><0>
-gpio_pin_17     = port:PC07<1><default><default><0>
-gpio_pin_18     = port:PA19<1><default><default><0>
-gpio_pin_19     = port:PA18<1><default><default><0>
-gpio_pin_20     = port:PA07<1><default><default><0>
-gpio_pin_21     = port:PA08<1><default><default><0>
-gpio_pin_22     = port:PL02<1><default><default><0>
-gpio_pin_23     = port:PA09<1><default><default><0>
-gpio_pin_24     = port:PA10<1><default><default><0>
-gpio_pin_25     = port:PL04<1><default><default><0>
-gpio_pin_26     = port:PA17<1><default><default><0>
+gpio_pin_4      = port:PA01<1><default><default><0>
+gpio_pin_5      = port:PA00<1><default><default><0>
+gpio_pin_6      = port:PA03<1><default><default><0>
+gpio_pin_7      = port:PC00<1><default><default><0>
+gpio_pin_8      = port:PC01<1><default><default><0>
+gpio_pin_9      = port:PC02<1><default><default><0>
+gpio_pin_10     = port:PA19<1><default><default><0>
+gpio_pin_11     = port:PA07<1><default><default><0>
+gpio_pin_12     = port:PA08<1><default><default><0>
+gpio_pin_13     = port:PA09<1><default><default><0>
+gpio_pin_14     = port:PA10<1><default><default><0>
+gpio_pin_15     = port:PA17<1><default><default><0>
+gpio_pin_16     = port:PA13<1><default><default><0>
+gpio_pin_17     = port:PA14<1><default><default><0>
+gpio_pin_18     = port:PA16<1><default><default><0>
+gpio_pin_19     = port:PA15<1><default><default><0>
+gpio_pin_20     = port:PC04<1><default><default><0>
+gpio_pin_21     = port:PA02<1><default><default><0>
+gpio_pin_22     = port:PC03<1><default><default><0>
+gpio_pin_23     = port:PC07<1><default><default><0>
+gpio_pin_24     = port:PA18<1><default><default><0>
+gpio_pin_25     = port:PL02<1><default><default><0>
+gpio_pin_26     = port:PL04<1><default><default><0>
 gpio_pin_27     = port:PA21<1><default><default><0>
 gpio_pin_28     = port:PA20<1><default><default><0>
-gpio_pin_29     = port:PL10<1><default><default><1>
-
+gpio_pin_29     = port:PL10<0><default><default><1>
 
 [led_assign]
 normal_led      = "gpio_pin_29"
-standby_led     = "gpio_pin_10"
+;standby_led     = "gpio_pin_10"
 
 ;----------------------------------------------------------------------------------
 ;thermal configuration
@@ -479,10 +478,10 @@ disp_init_enable         = 1
 disp_mode                = 0
 
 screen0_output_type      = 3
-screen0_output_mode      = 4
+screen0_output_mode      = 5
 
 screen1_output_type      = 3
-screen1_output_mode      = 4
+screen1_output_mode      = 5
 
 fb0_format               = 0
 fb0_width                = 0
@@ -508,16 +507,16 @@ hdmi_power             = "vcc-hdmi-18"
 ;hdmi_cts_compatibility = 1
 
 [tv_para]
-tv_used				= 1
-tv_dac_used			= 1
-tv_dac_src0			= 0
+tv_used			= 0
+tv_dac_used		= 1
+tv_dac_src0		= 0
 
 ;----------------------------------------------------------------------------------
 ;pwm config
 ;----------------------------------------------------------------------------------
 [pwm0_para]
 pwm_used            = 0
-pwm_positive        = port:PA05<3><0><default><default>
+pwm_positive        = port:PA06<3><0><default><default>
 
 ;------------------------------------------------------------------------------;
 ; 10/100/100Mbps Ethernet MAC Controller Configure                             ;
@@ -870,9 +869,9 @@ vendor_id           = 0x18D1
 mass_storage_id     = 0x0001
 adb_id              = 0x0002
 
-manufacturer_name   = "USB Developer"
-product_name        = "Android"
-serial_number       = "20080411"
+manufacturer_name   = "Sinovoip"
+product_name        = "BPI-M2P"
+serial_number       = "0001"
 
 [msc_feature]
 vendor_name         = "USB 2.0"
@@ -979,73 +978,73 @@ bt_host_wake_invert   = 0
 ;rx_data_mode 		:0: 16bit linear PCM; 1: 8bit linear PCM; 2: 8bit u-law; 3: 8bit a-law
 ;--------------------------------------------------------------------------------
 [pcm0]
-daudio_used         = 0
+daudio_used		= 0
 daudio_master		= 4
 daudio_select  		= 1
 audio_format		= 1
 signal_inversion	= 1
-mclk_fs				= 128
-sample_resolution   = 16
+mclk_fs			= 128
+sample_resolution  	= 16
 slot_width_select 	= 32
 ;pcm_sync_period 	= 256
 pcm_lrck_period		= 32
 pcm_lrckr_period 	= 1
-msb_lsb_first 	    = 0
+msb_lsb_first 	    	= 0
 sign_extend 		= 0
-slot_index 		    = 0
-slot_width 		    = 32
+slot_index 		= 0
+slot_width 		= 32
 frame_width 		= 0
 tx_data_mode 		= 0
 rx_data_mode 		= 0
-i2s_mclk            = port:PA18<2><1><default><default>
-i2s_bclk            = port:PA19<2><1><default><default>
-i2s_dout0           = port:PA20<2><1><default><default>
-i2s_din             = port:PA21<2><1><default><default>
+i2s_mclk            	= port:PA18<2><1><default><default>
+i2s_bclk            	= port:PA19<2><1><default><default>
+i2s_dout0           	= port:PA20<2><1><default><default>
+i2s_din             	= port:PA21<2><1><default><default>
 
 
 [pcm1]
-daudio_used         = 0
+daudio_used         	= 0
 daudio_master		= 4
 daudio_select  		= 1
 audio_format		= 1
 signal_inversion	= 1
-mclk_fs				= 128
-sample_resolution   = 16
+mclk_fs			= 128
+sample_resolution   	= 16
 slot_width_select 	= 32
 ;pcm_sync_period 	= 256
 pcm_lrck_period		= 32
 pcm_lrckr_period 	= 1
-msb_lsb_first 	    = 0
+msb_lsb_first 	    	= 0
 sign_extend 		= 0
-slot_index 		    = 0
-slot_width 		    = 32
+slot_index 		= 0
+slot_width 		= 32
 frame_width 		= 0
 tx_data_mode 		= 0
 rx_data_mode 		= 0
-i2s_mclk            = port:PG10<2><1><default><default>
-i2s_bclk            = port:PG11<2><1><default><default>
-i2s_dout0           = port:PG12<2><1><default><default>
-i2s_din             = port:PG13<2><1><default><default>
+i2s_mclk            	= port:PG10<2><1><default><default>
+i2s_bclk            	= port:PG11<2><1><default><default>
+i2s_dout0           	= port:PG12<2><1><default><default>
+i2s_din             	= port:PG13<2><1><default><default>
 
 
 [audio0]
 audio_used          	= 1
-lineout_vol				= 0x1f
-cap_vol					= 0x5
-audio_hp_ldo       		= "none"
-adcagc_used       		= 0
-adcdrc_used       		= 0
-dacdrc_used       		= 0
-adchpf_used       		= 0
-dachpf_used       		= 0
+lineout_vol		= 0x1f
+cap_vol			= 0x5
+audio_hp_ldo       	= "none"
+adcagc_used       	= 0
+adcdrc_used       	= 0
+dacdrc_used       	= 0
+adchpf_used       	= 0
+dachpf_used       	= 0
 audio_pa_ctrl          	= port:PL01<1><default><default><0>
 
 [spdif0]
-spdif_used          = 0
-spdif_dout          = port:PA17<2><1><default><default>
+spdif_used          	= 0
+spdif_dout          	= port:PA17<2><1><default><default>
 
 [audiohub]
-hub_used    = 0
+hub_used    	= 0
 codec_used 	= 1
 spdif_used 	= 1
 hdmi_used 	= 1
@@ -1233,26 +1232,26 @@ scr_det             = port:PA10<2><default><default><default>
 ;tsc configuration
 ;--------------------------------------------------------------------------------
 [ts0]
-tsc_used			= 0
-tsc_clk				= port:PE00<3><default><default><default>
-tsc_err				= port:PE01<3><default><default><default>
-tsc_sync			= port:PE02<3><default><default><default>
-tsc_dvld			= port:PE03<3><default><default><default>
-tsc_d0				= port:PE04<3><default><default><default>
-tsc_d1				= port:PE05<3><default><default><default>
-tsc_d2				= port:PE06<3><default><default><default>
-tsc_d3				= port:PE07<3><default><default><default>
-tsc_d4				= port:PE08<3><default><default><default>
-tsc_d5				= port:PE09<3><default><default><default>
-tsc_d6				= port:PE10<3><default><default><default>
-tsc_d7				= port:PE11<3><default><default><default>
+tsc_used		= 0
+tsc_clk			= port:PE00<3><default><default><default>
+tsc_err			= port:PE01<3><default><default><default>
+tsc_sync		= port:PE02<3><default><default><default>
+tsc_dvld		= port:PE03<3><default><default><default>
+tsc_d0			= port:PE04<3><default><default><default>
+tsc_d1			= port:PE05<3><default><default><default>
+tsc_d2			= port:PE06<3><default><default><default>
+tsc_d3			= port:PE07<3><default><default><default>
+tsc_d4			= port:PE08<3><default><default><default>
+tsc_d5			= port:PE09<3><default><default><default>
+tsc_d6			= port:PE10<3><default><default><default>
+tsc_d7			= port:PE11<3><default><default><default>
 
 ;--------------------------------------------------------------------------------
 ;gpio key
 ;--------------------------------------------------------------------------------
 [gpio_power_key]
-key_used				= 1
-key_io					= port:PL03<6><default><default><0>
+key_used		= 1
+key_io			= port:PL03<6><default><default><0>
 
 ;----------------------------------------------------------------------------------
 ; key para
@@ -1264,23 +1263,23 @@ key_io					= port:PL03<6><default><default><0>
 ; For example: if key2_vol < $(keyadc value) < key3_vol, then key3 be reported.
 ;----------------------------------------------------------------------------------
 [key_para]
-key_used                  = 0
-key_cnt                   = 5
-key1_vol				  = 222
-key2_vol				  = 444
-key3_vol				  =	666
-key4_vol				  =	857
-key5_vol				  = 2000
+key_used                = 0
+key_cnt                 = 5
+key1_vol		= 222
+key2_vol		= 444
+key3_vol		= 666
+key4_vol		= 857
+key5_vol		= 2000
 
 
 ;----------------------------------------------------------------------------------
 ;display seven segment para
 ;----------------------------------------------------------------------------------
 [d7s_para]
-d7s_used				= 0
-din_gpio				= port:PD00<1><default><default><1>
-clk_gpio				= port:PD01<1><default><default><1>
-stb_gpio				= port:PD02<1><default><default><1>
+d7s_used		= 0
+din_gpio		= port:PD00<1><default><default><1>
+clk_gpio		= port:PD01<1><default><default><1>
+stb_gpio		= port:PD02<1><default><default><1>
 
 
 ;----------------------------------------------------------------------------------
