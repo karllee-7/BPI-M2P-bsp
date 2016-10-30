@@ -10,12 +10,11 @@ die() {
         exit 1
 }
 
-[ -s "../chosen_board.mk" ] || die "please run ./configure first."
 [ $# -eq 1 ] || die "Usage: $0 /dev/sdc"
 
-set -e
+[ -s "./env.sh" ] || die "please run ./configure first."
 
-. ../chosen_board.mk
+. ./env.sh
 
 O=$1
 P=../output/$BOARD/pack
