@@ -916,6 +916,9 @@ static int geth_open(struct net_device *ndev)
 		ret = -EINVAL;
 	}
 
+	/* bpi */
+	msleep(500);
+
 	geth_clk_enable(priv);
 
 	ret = geth_phy_init(ndev);
