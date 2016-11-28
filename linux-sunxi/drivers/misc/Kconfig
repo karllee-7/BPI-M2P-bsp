@@ -532,7 +532,7 @@ config SUNXI_BROM_READ
 	default n
 	---help---
 	 This option can allow program access brom space by the file node.
-	 
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
@@ -542,4 +542,11 @@ source "drivers/misc/lis3lv02d/Kconfig"
 source "drivers/misc/carma/Kconfig"
 source "drivers/misc/altera-stapl/Kconfig"
 source "drivers/misc/sw_3g_module/Kconfig"
+
+config SUNXI_RF_POWER
+        tristate "Sunxi wireless module power control interface"
+        depends on WIRELESS || RFKILL
+        default y
+        ---help---
+          Say yes here to enable Sunxi wireless module power control interface.
 endmenu
