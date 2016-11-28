@@ -598,6 +598,11 @@ static int sunxi_cpufreq_resume(struct cpufreq_policy *policy)
 
 #endif  /* #ifdef CONFIG_PM */
 
+/* Export freq_table to sysfs */
+static struct freq_attr *sunxi_cpufreq_attr[] = {
+	&cpufreq_freq_attr_scaling_available_freqs,
+	NULL,
+};
 
 static struct cpufreq_driver sunxi_cpufreq_driver = {
 	.name       = "cpufreq-sunxi",
@@ -609,6 +614,7 @@ static struct cpufreq_driver sunxi_cpufreq_driver = {
 	.getavg     = sunxi_cpufreq_getavg,
 	.suspend    = sunxi_cpufreq_suspend,
 	.resume     = sunxi_cpufreq_resume,
+	.attr	    = sunxi_cpufreq_attr,
 };
 
 
