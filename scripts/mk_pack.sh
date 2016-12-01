@@ -1,3 +1,4 @@
+#!/bin/bash
 
 die() {
         echo "$*" >&2
@@ -26,7 +27,12 @@ pack_bootloader()
 }
 
 
-BOARDS=`(cd sunxi-pack/chips/$MACH/configs ; ls -1d BPI*)`
-for IN in $BOARDS ; do
-  pack_bootloader $IN
-done 
+if [[ $BOARD =~ "BPI-M2P" ]]
+then
+	BOARDS=`(cd sunxi-pack/chips/$MACH/configs ; ls -1d BPI*)`
+	for IN in $BOARDS ; do
+  	  pack_bootloader $IN
+	done
+else
+        pack_bootloader $BOARD
+fi

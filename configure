@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -6,6 +6,7 @@ SOC=h3
 MACH=sun8iw7p1
 PLATFORM=
 BOARD=
+board=
 TOPDIR=`pwd`
 #TARGET_PLATFORM="BPI"
 #TARGET_PRODUCT="BPI-M2P"
@@ -29,7 +30,7 @@ generate_board_mk() {
 	COMPILE_TOOL=$CROSS_COMPILE
 	NEW_COMPILE_TOOL=$NEW_CROSS_COMPILE
 	UBOOT_CONFIG=$MACH
-	KERNEL_CONFIG=sun8iw7p1smp_bpi_defconfig
+	KERNEL_CONFIG=sun8iw7p1smp_${board}_defconfig
 	LICHEE_PLATFORM=linux
 	EOT
 
@@ -45,7 +46,7 @@ generate_board_envsh() {
 	export MACH=$MACH
 	export CROSS_COMPILE=arm-linux-gnueabihf-
 	export UBOOT_CONFIG=${MACH}_config
-	export KERNEL_CONFIG=sun8iw7p1smp_bpi_defconfig
+	export KERNEL_CONFIG=sun8iw7p1smp_${board}_defconfig
 	export LICHEE_PLATFORM="linux"
 	export GPU_TYPE="mali400"
 	export TOPDIR=${TOPDIR}
@@ -70,6 +71,13 @@ if [ $# -eq 0 ]; then
 fi
 
 BOARD=$1
+
+if [[ $BOARD =~ "BPI-M2P" ]] 
+then
+	board="bpi"
+else
+	board=$(echo $BOARD | tr '[A-Z]' '[a-z]')
+fi
 
 generate_board_envsh "$1" > env.sh
 

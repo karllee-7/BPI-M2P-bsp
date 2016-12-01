@@ -2,17 +2,19 @@
 # (c) 2015, Leo Xu <otakunekop@banana-pi.org.cn>
 # Build script for BPI-M2P-BSP 2016.03.02
 
+T=
 MACH="sun8iw7p1"
-BOARD=BPI_M2P_720P
-board="bpi-m2p"
-kernel="3.4.39-BPI-M2P-Kernel"
-MODE=$1
+BOARD=$1
+board=
+kernel=
+BOOT_PACK_P=
+MODE=$2
 
+echo "top dir $T"
 
 cp_download_files()
 {
-T="$TOPDIR"
-SD="$T/SD"
+SD="$T/SD/$board"
 U="${SD}/100MB"
 B="${SD}/BPI-BOOT"
 R="${SD}/BPI-ROOT"
@@ -34,8 +36,8 @@ R="${SD}/BPI-ROOT"
 	#
 	## copy files to BPI-BOOT
 	#
-	mkdir -p $B/bananapi/${board}
-	cp -a $T/sunxi-pack/chips/${MACH}/configs/default/linux $B/bananapi/${board}/
+	mkdir -p $B/bananapi/${board}/linux
+	cp $BOOT_PACK_P/* $B/bananapi/${board}/linux/
 	cp -a $T/linux-sunxi/arch/arm/boot/uImage $B/bananapi/${board}/linux/uImage
 
 	#
@@ -68,10 +70,29 @@ list_boards() {
 
 list_boards
 
+if [ -z "$BOARD" ]; then
+        echo -e "\033[31mNo BOARD select\033[0m"
+	echo
+	echo -e "\033[31m# ./build.sh <board> <mode> \033[0m"
+	exit 1
+fi
+
 ./configure $BOARD
 
 if [ -f env.sh ] ; then
 	. env.sh
+fi
+
+T="$TOPDIR"
+if [[ $BOARD =~ "BPI-M2P" ]]
+then
+        board="bpi-m2p"
+        kernel="3.4.39-BPI-M2P-Kernel"
+        BOOT_PACK_P=$T/sunxi-pack/chips/${MACH}/configs/default/linux
+else
+        board=$(echo $BOARD | tr '[A-Z]' '[a-z]')
+        kernel="3.4.39-${BOARD}-Kernel"
+        BOOT_PACK_P=$T/sunxi-pack/chips/${MACH}/configs/${BOARD}/linux
 fi
 
 echo "This tool support following building mode(s):"
