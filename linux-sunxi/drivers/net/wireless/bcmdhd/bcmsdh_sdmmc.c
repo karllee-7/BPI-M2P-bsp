@@ -2,13 +2,13 @@
  * BCMSDH Function Driver for the native SDIO/MMC driver in the Linux Kernel
  *
  * Copyright (C) 1999-2014, Broadcom Corporation
- *
+ * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- *
+ * 
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,7 +16,7 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- *
+ * 
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
@@ -59,7 +59,7 @@ static void IRQHandler(struct sdio_func *func);
 static void IRQHandlerF2(struct sdio_func *func);
 #endif /* !defined(OOB_INTR_ONLY) */
 static int sdioh_sdmmc_get_cisaddr(sdioh_info_t *sd, uint32 regaddr);
-#if defined(ENABLE_INSMOD_NO_FW_LOAD)
+#if defined(ENABLE_INSMOD_NO_FW_LOAD) && !defined(BUS_POWER_RESTORE)
 extern int sdio_reset_comm(struct mmc_card *card);
 #else
 int sdio_reset_comm(struct mmc_card *card)
@@ -67,11 +67,11 @@ int sdio_reset_comm(struct mmc_card *card)
 	return 0;
 }
 #endif
-#ifdef CONFIG_ARCH_SUNXI
-extern int sunxi_mci_check_r1_ready(struct mmc_host* mmc, unsigned ms);
-#endif
 #ifdef GLOBAL_SDMMC_INSTANCE
 extern PBCMSDH_SDMMC_INSTANCE gInstance;
+#endif
+#ifdef CUSTOMER_HW_ALLWINNER
+extern int sunxi_mci_check_r1_ready(struct mmc_host* mmc, unsigned ms);
 #endif
 
 #define DEFAULT_SDIO_F2_BLKSIZE		512
@@ -716,7 +716,11 @@ sdioh_enable_hw_oob_intr(sdioh_info_t *sd, bool enable)
 	uint8 data;
 
 	if (enable)
+#ifdef HW_OOB_LOW_LEVEL
+		data = SDIO_SEPINT_MASK | SDIO_SEPINT_OE;
+#else
 		data = SDIO_SEPINT_MASK | SDIO_SEPINT_OE | SDIO_SEPINT_ACT_HI;
+#endif
 	else
 		data = SDIO_SEPINT_ACT_HI;	/* disable hw oob interrupt */
 
@@ -803,9 +807,6 @@ sdioh_request_byte(sdioh_info_t *sd, uint rw, uint func, uint regaddr, uint8 *by
 #if defined(MMC_SDIO_ABORT)
 	int sdio_abort_retry = MMC_SDIO_ABORT_RETRY_LIMIT;
 #endif
-#ifdef CONFIG_ARCH_SUNXI
-	int ret = 0;
-#endif
 	struct timespec now, before;
 
 	if (sd_msglevel && SDH_COST_VAL)
@@ -815,7 +816,7 @@ sdioh_request_byte(sdioh_info_t *sd, uint rw, uint func, uint regaddr, uint8 *by
 
 	DHD_PM_RESUME_WAIT(sdioh_request_byte_wait);
 	DHD_PM_RESUME_RETURN_ERROR(SDIOH_API_RC_FAIL);
-	if (rw) { /* CMD52 Write */
+	if(rw) { /* CMD52 Write */
 		if (func == 0) {
 			/* Can only directly write to some F0 registers.  Handle F2 enable
 			 * as a special case.
@@ -892,16 +893,15 @@ sdioh_request_byte(sdioh_info_t *sd, uint rw, uint func, uint regaddr, uint8 *by
 			sdio_release_host(sd->func[func]);
 		}
 	}
-#ifdef CONFIG_ARCH_SUNXI
+
+#ifdef CUSTOMER_HW_ALLWINNER
 	//AW judge sdio read write timeout, 1s
-	ret = sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000);
-	if (ret != 0)
+	if (sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000) != 0)
 		printk("%s data timeout.\n", __FUNCTION__);
 #endif
 
 	if (err_ret) {
-		if ((regaddr == 0x1001F) && ((err_ret == -ETIMEDOUT) || (err_ret == -EILSEQ)
-			|| (err_ret == -EIO))) {
+		if ((regaddr == 0x1001F) && ((err_ret == -ETIMEDOUT) || (err_ret == -EILSEQ))) {
 		} else {
 			sd_err(("bcmsdh_sdmmc: Failed to %s byte F%d:@0x%05x=%02x, Err: %d\n",
 				rw ? "Write" : "Read", func, regaddr, *byte, err_ret));
@@ -910,8 +910,8 @@ sdioh_request_byte(sdioh_info_t *sd, uint rw, uint func, uint regaddr, uint8 *by
 
 	if (sd_msglevel && SDH_COST_VAL)
 		getnstimeofday(&now);
-	sd_cost(("%s: len=1 cost=%lds %luus\n", __FUNCTION__,
-		now.tv_sec-before.tv_sec, now.tv_nsec/1000-before.tv_nsec/1000));
+	sd_cost(("%s: rw=%d len=1 cost=%lds %luus\n", __FUNCTION__,
+		rw, now.tv_sec-before.tv_sec, now.tv_nsec/1000-before.tv_nsec/1000));
 
 	return ((err_ret == 0) ? SDIOH_API_RC_SUCCESS : SDIOH_API_RC_FAIL);
 }
@@ -1319,9 +1319,6 @@ sdioh_request_word(sdioh_info_t *sd, uint cmd_type, uint rw, uint func, uint add
 #if defined(MMC_SDIO_ABORT)
 	int sdio_abort_retry = MMC_SDIO_ABORT_RETRY_LIMIT;
 #endif
-#ifdef CONFIG_ARCH_SUNXI
-	int ret = 0;
-#endif
 	struct timespec now, before;
 
 	if (sd_msglevel && SDH_COST_VAL)
@@ -1340,7 +1337,7 @@ sdioh_request_word(sdioh_info_t *sd, uint cmd_type, uint rw, uint func, uint add
 	/* Claim host controller */
 	sdio_claim_host(sd->func[func]);
 
-	if (rw) { /* CMD52 Write */
+	if(rw) { /* CMD52 Write */
 		if (nbytes == 4) {
 			sdio_writel(sd->func[func], *word, addr, &err_ret);
 		} else if (nbytes == 2) {
@@ -1357,12 +1354,13 @@ sdioh_request_word(sdioh_info_t *sd, uint cmd_type, uint rw, uint func, uint add
 			sd_err(("%s: Invalid nbytes: %d\n", __FUNCTION__, nbytes));
 		}
 	}
-#ifdef CONFIG_ARCH_SUNXI
+
+#ifdef CUSTOMER_HW_ALLWINNER
 	//AW judge sdio read write timeout, 1s
-	ret = sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000);
-	if (ret != 0)
+	if (sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000) != 0)
 		printk("%s data timeout.\n", __FUNCTION__);
 #endif
+
 	/* Release host controller */
 	sdio_release_host(sd->func[func]);
 
@@ -1379,10 +1377,10 @@ sdioh_request_word(sdioh_info_t *sd, uint cmd_type, uint rw, uint func, uint add
 				 */
 				sdio_writeb(sd->func[0],
 					func, SDIOD_CCCR_IOABORT, &err_ret2);
-#ifdef CONFIG_ARCH_SUNXI
+
+#ifdef CUSTOMER_HW_ALLWINNER
 				//AW judge sdio read write timeout, 1s
-				ret = sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000);
-				if (ret != 0)
+				if (sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000) != 0)
 					printk("%s data timeout, SDIO_CCCR_IOABORT.\n", __FUNCTION__);	
 #endif
 				sdio_release_host(sd->func[0]);
@@ -1400,8 +1398,8 @@ sdioh_request_word(sdioh_info_t *sd, uint cmd_type, uint rw, uint func, uint add
 
 	if (sd_msglevel && SDH_COST_VAL)
 		getnstimeofday(&now);
-	sd_cost(("%s: len=%d cost=%lds %luus\n", __FUNCTION__,
-		nbytes, now.tv_sec-before.tv_sec, now.tv_nsec/1000 - before.tv_nsec/1000));
+	sd_cost(("%s: rw=%d, len=%d cost=%lds %luus\n", __FUNCTION__,
+		rw, nbytes, now.tv_sec-before.tv_sec, now.tv_nsec/1000 - before.tv_nsec/1000));
 
 	return (((err_ret == 0)&&(err_ret2 == 0)) ? SDIOH_API_RC_SUCCESS : SDIOH_API_RC_FAIL);
 }
@@ -1616,8 +1614,8 @@ txglomfail:
 
 	if (sd_msglevel && SDH_COST_VAL)
 		getnstimeofday(&now);
-	sd_cost(("%s: cost=%lds %luus\n", __FUNCTION__,
-		now.tv_sec-before.tv_sec, now.tv_nsec/1000-before.tv_nsec/1000));
+	sd_cost(("%s: rw=%d, cost=%lds %luus\n", __FUNCTION__,
+		write, now.tv_sec-before.tv_sec, now.tv_nsec/1000-before.tv_nsec/1000));
 
 	sd_trace(("%s: Exit\n", __FUNCTION__));
 	return SDIOH_API_RC_SUCCESS;
@@ -1630,9 +1628,6 @@ sdioh_buffer_tofrom_bus(sdioh_info_t *sd, uint fix_inc, uint write, uint func,
 	bool fifo = (fix_inc == SDIOH_DATA_FIX);
 	int err_ret = 0;
 	struct timespec now, before;
-#ifdef CONFIG_ARCH_SUNXI
-	int ret = 0;
-#endif
 
 	sd_trace(("%s: Enter\n", __FUNCTION__));
 	ASSERT(buf);
@@ -1660,12 +1655,12 @@ sdioh_buffer_tofrom_bus(sdioh_info_t *sd, uint fix_inc, uint write, uint func,
 	else
 		err_ret = sdio_memcpy_fromio(sd->func[func], buf, addr, len);
 
-#ifdef CONFIG_ARCH_SUNXI
-			//AW judge sdio read write timeout, 1s
-			ret = sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000);
-			if (ret != 0)
-				printk(("%s data timeout.\n", __FUNCTION__));
+#ifdef CUSTOMER_HW_ALLWINNER
+	//AW judge sdio read write timeout, 1s
+	if (sunxi_mci_check_r1_ready(sd->func[func]->card->host, 1000) != 0)
+		printk("%s data timeout.\n", __FUNCTION__);
 #endif
+
 	sdio_release_host(sd->func[func]);
 
 	if (err_ret)
@@ -1679,8 +1674,8 @@ sdioh_buffer_tofrom_bus(sdioh_info_t *sd, uint fix_inc, uint write, uint func,
 
 	if (sd_msglevel && SDH_COST_VAL)
 		getnstimeofday(&now);
-	sd_cost(("%s: len=%d cost=%lds %luus\n", __FUNCTION__,
-		len, now.tv_sec-before.tv_sec, now.tv_nsec/1000 - before.tv_nsec/1000));
+	sd_cost(("%s: rw=%d, len=%d cost=%lds %luus\n", __FUNCTION__,
+		write, len, now.tv_sec-before.tv_sec, now.tv_nsec/1000 - before.tv_nsec/1000));
 	return ((err_ret == 0) ? SDIOH_API_RC_SUCCESS : SDIOH_API_RC_FAIL);
 }
 

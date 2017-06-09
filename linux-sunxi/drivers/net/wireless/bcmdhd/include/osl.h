@@ -38,11 +38,11 @@ typedef void  (*osl_wreg_fn_t)(void *ctx, volatile void *reg, unsigned int val, 
 
 #ifndef AND_REG
 #define AND_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) & (v))
-#endif  /* !AND_REG */
+#endif   /* !AND_REG */
 
 #ifndef OR_REG
 #define OR_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) | (v))
-#endif  /* !OR_REG */
+#endif   /* !OR_REG */
 
 #if !defined(OSL_SYSUPTIME)
 #define OSL_SYSUPTIME() (0)

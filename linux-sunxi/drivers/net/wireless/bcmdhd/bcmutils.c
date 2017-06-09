@@ -735,7 +735,7 @@ prpkt(const char *msg, osl_t *osh, void *p0)
 	for (p = p0; p; p = PKTNEXT(osh, p))
 		prhex(NULL, PKTDATA(osh, p), PKTLEN(osh, p));
 }
-#endif
+#endif	
 
 /* Takes an Ethernet frame and sets out-of-bound PKTPRIO.
  * Also updates the inplace vlan tag if requested.
@@ -1543,7 +1543,7 @@ bcm_format_flags(const bcm_bit_desc_t *bd, uint32 flags, char* buf, int len)
 
 	return (int)(p - buf);
 }
-#endif
+#endif 
 
 /* print bytes formatted as hex to a string. return the resulting string length */
 int
@@ -1989,7 +1989,7 @@ bcm_format_ssid(char* buf, const uchar ssid[], uint ssid_len)
 
 	return (int)(p - buf);
 }
-#endif
+#endif 
 
 #endif /* BCMDRIVER */
 
@@ -2269,7 +2269,7 @@ bcm_ip_cksum(uint8 *buf, uint32 len, uint32 sum)
 #define BCM_MWBMAP_AUDIT(mwb)   do {} while (0)
 #define MWBMAP_ASSERT(exp)		do {} while (0)
 #define MWBMAP_DBG(x)
-#endif /* !BCM_MWBMAP_DEBUG */
+#endif  /* !BCM_MWBMAP_DEBUG */
 
 
 typedef struct bcm_mwbmap {     /* Hierarchical multiword bitmap allocator    */

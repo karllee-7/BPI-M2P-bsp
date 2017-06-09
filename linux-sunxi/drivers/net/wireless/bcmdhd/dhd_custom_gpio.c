@@ -25,7 +25,7 @@
 int __attribute__ ((weak)) wifi_get_fw_nv_path(char *fw, char *nv) { return 0;};
 #endif
 
-#endif
+#endif 
 
 #if defined(OOB_INTR_ONLY)
 
@@ -82,11 +82,11 @@ int dhd_customer_oob_irq_map(void *adapter, unsigned long *irq_flags_ptr)
 	host_oob_irq = gpio_to_irq(dhd_oob_gpio_num);
 	gpio_direction_input(dhd_oob_gpio_num);
 #endif /* defined CUSTOMER_HW3 || defined(PLATFORM_MPS) */
-#endif
+#endif 
 
 	return (host_oob_irq);
 }
-#endif
+#endif 
 
 /* Customer function to control hw specific wlan gpios */
 int

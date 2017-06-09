@@ -19,9 +19,11 @@ struct rf_mod_info {
 
 //wl function info
 struct wl_func_info {
+    int bus_index;
 	int  wifi_used;
 	char *module_name;
 	int  wl_reg_on;
+	int gpio_wlan_hostwake;
 	int  wl_power_state;
 
 #ifdef CONFIG_PROC_FS

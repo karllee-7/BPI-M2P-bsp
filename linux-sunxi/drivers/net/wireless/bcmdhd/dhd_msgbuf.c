@@ -111,7 +111,7 @@ typedef struct msgbuf_ring {
 	ring_state_t	*ringstate;
 #if defined(PCIE_D2H_SYNC)
 	uint32      seqnum;
-#endif /* PCIE_D2H_SYNC */
+#endif  /* PCIE_D2H_SYNC */
 	void *secdma;
 } msgbuf_ring_t;
 
@@ -166,7 +166,7 @@ typedef struct dhd_prot {
 	d2h_sync_cb_t d2h_sync_cb; /* Sync on D2H DMA done: SEQNUM or XORCSUM */
 	ulong d2h_sync_wait_max; /* max number of wait loops to receive one msg */
 	ulong d2h_sync_wait_tot; /* total wait loops */
-#endif /* PCIE_D2H_SYNC */
+#endif  /* PCIE_D2H_SYNC */
 	dhd_dmaxfer_t	dmaxfer;
 	bool		dmaxfer_in_progress;
 
@@ -2015,7 +2015,7 @@ dhd_prot_txstatus_process(dhd_pub_t *dhd, void * buf, uint16 msglen)
 
 #if defined(BCMPCIE)
 		dhd_txcomplete(dhd, pkt, true);
-#endif
+#endif 
 
 #if DHD_DBG_SHOW_METADATA
 		if (dhd->prot->tx_metadata_offset && txstatus->metadata_len) {
@@ -2887,7 +2887,7 @@ void dhd_prot_dump(dhd_pub_t *dhd, struct bcmstrbuf *strbuf)
 		bcm_bprintf(strbuf, "\nd2h_sync: NONE:");
 	bcm_bprintf(strbuf, " d2h_sync_wait max<%lu> tot<%lu>\n",
 	            dhd->prot->d2h_sync_wait_max, dhd->prot->d2h_sync_wait_tot);
-#endif /* PCIE_D2H_SYNC */
+#endif  /* PCIE_D2H_SYNC */
 }
 
 /* Update local copy of dongle statistics */

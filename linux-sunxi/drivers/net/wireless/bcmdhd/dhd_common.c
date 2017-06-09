@@ -104,10 +104,10 @@ bool ap_fw_loaded = FALSE;
 
 #if defined(DHD_DEBUG)
 const char dhd_version[] = "Dongle Host Driver, version " EPI_VERSION_STR
-	DHD_COMPILED ;//" on " __DATE__ " at " __TIME__;
+	DHD_COMPILED " on " __DATE__ " at " __TIME__;
 #else
 const char dhd_version[] = "\nDongle Host Driver, version " EPI_VERSION_STR "\nCompiled from ";
-#endif
+#endif 
 
 void dhd_set_timer(void *bus, uint wdtick);
 
@@ -1832,7 +1832,7 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 	case WLC_E_PFN_BEST_BATCHING:
 		dhd_pno_event_handler(dhd_pub, event, (void *)event_data);
 		break;
-#endif
+#endif 
 		/* These are what external supplicant/authenticator wants */
 	case WLC_E_ASSOC_IND:
 	case WLC_E_AUTH_IND:
@@ -2863,7 +2863,7 @@ wl_iw_parse_channel_list(char** list_str, uint16* channel_list, int channel_num)
 	char* str;
 	char* endptr = NULL;
 
-	if ((list_str == NULL) || (*list_str == NULL))
+	if ((list_str == NULL)||(*list_str == NULL))
 		return -1;
 
 	str = *list_str;

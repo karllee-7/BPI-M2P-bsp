@@ -3315,7 +3315,7 @@ wl_update_connected_rssi_cache(struct net_device *net, wl_rssi_cache_ctrl_t *rss
 		if (!memcmp(&node->BSSID, &bssid, ETHER_ADDR_LEN)) {
 			ANDROID_INFO(("%s: Update %d with BSSID %pM, RSSI=%d\n",
 				__FUNCTION__, k, &bssid, rssi));
-			for (j = 0; j < RSSIAVG_LEN-1; j++)
+			for (j=0; j<RSSIAVG_LEN-1; j++)
 				node->RSSI[j] = node->RSSI[j+1];
 			node->RSSI[j] = rssi;
 			node->dirty = 0;
@@ -3388,7 +3388,7 @@ wl_update_rssi_cache(wl_rssi_cache_ctrl_t *rssi_cache_ctrl, wl_scan_results_t *s
 			if (!memcmp(&node->BSSID, &bi->BSSID, ETHER_ADDR_LEN)) {
 				ANDROID_INFO(("%s: Update %d with BSSID %pM, RSSI=%3d, SSID \"%s\"\n",
 					__FUNCTION__, k, &bi->BSSID, dtoh16(bi->RSSI), bi->SSID));
-				for (j = 0; j < RSSIAVG_LEN-1; j++)
+				for (j=0; j<RSSIAVG_LEN-1; j++)
 					node->RSSI[j] = node->RSSI[j+1];
 				node->RSSI[j] = dtoh16(bi->RSSI);
 				node->dirty = 0;

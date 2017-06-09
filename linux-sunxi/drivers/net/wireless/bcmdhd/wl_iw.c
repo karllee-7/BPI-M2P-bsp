@@ -23,6 +23,9 @@
 typedef const struct si_pub	si_t;
 #include <wlioctl.h>
 #include <wl_android.h>
+#ifdef WL_ESCAN
+#include <wl_escan.h>
+#endif
 
 
 /* message levels */
@@ -600,7 +603,7 @@ wl_iw_set_freq(
 	WL_ERROR(("%s: chan=%d\n", __FUNCTION__, chan));
 	chan = htod32(chan);
 	if ((error = dev_wlc_ioctl(dev, WLC_SET_CHANNEL, &chan, sizeof(chan)))) {
-		WL_ERROR(("%s: WLC_DISASSOC failed (%d).\n", __FUNCTION__, error));
+		WL_ERROR(("%s: WLC_SET_CHANNEL failed (%d).\n", __FUNCTION__, error));
 		return error;
 	}
 
@@ -1388,7 +1391,10 @@ wpa_snprintf_hex(char *buf, size_t buf_size, const u8 *data, size_t len)
 }
 #endif /* BCMWAPI_WPI */
 
-static int
+#ifndef WL_ESCAN
+static
+#endif
+int
 wl_iw_handle_scanresults_ies(char **event_p, char *end,
 	struct iw_request_info *info, wl_bss_info_t *bi)
 {
@@ -1546,7 +1552,7 @@ wl_iw_get_scan(
 		// terence 20150419: limit the max. rssi to -2 or the bss will be filtered out in android OS
 		rssi = MIN(dtoh16(bi->RSSI), RSSI_MAXVAL);
 		channel = (bi->ctl_ch == 0) ? CHSPEC_CHANNEL(bi->chanspec) : bi->ctl_ch;
-		WL_SCAN(("%s: BSSID="MACSTR", channel=%d, RSSI=%d, merge broadcast SSID=\"%s\"\n",
+		WL_SCAN(("%s: BSSID="MACSTR", channel=%d, RSSI=%d, SSID=\"%s\"\n",
 		__FUNCTION__, MAC2STR(bi->BSSID.octet), channel, rssi, bi->SSID));
 
 		/* First entry must be the BSSID */
@@ -1680,7 +1686,7 @@ wl_iw_iscan_get_scan(
 			// terence 20150419: limit the max. rssi to -2 or the bss will be filtered out in android OS
 			rssi = MIN(dtoh16(bi->RSSI), RSSI_MAXVAL);
 			channel = (bi->ctl_ch == 0) ? CHSPEC_CHANNEL(bi->chanspec) : bi->ctl_ch;
-			WL_SCAN(("%s: BSSID="MACSTR", channel=%d, RSSI=%d, merge broadcast SSID=\"%s\"\n",
+			WL_SCAN(("%s: BSSID="MACSTR", channel=%d, RSSI=%d, SSID=\"%s\"\n",
 			__FUNCTION__, MAC2STR(bi->BSSID.octet), channel, rssi, bi->SSID));
 
 			/* First entry must be the BSSID */
@@ -1754,6 +1760,7 @@ wl_iw_iscan_get_scan(
 
 	dwrq->length = event - extra;
 	dwrq->flags = 0;	/* todo */
+	WL_SCAN(("%s: apcnt=%d\n", __FUNCTION__, apcnt));
 
 	return 0;
 }
@@ -3087,8 +3094,13 @@ static const iw_handler wl_iw_handler[] =
 #endif
 	(iw_handler) wl_iw_iscan_get_aplist,	/* SIOCGIWAPLIST */
 #if WIRELESS_EXT > 13
+#ifdef WL_ESCAN
+	(iw_handler) wl_escan_set_scan,	/* SIOCSIWSCAN */
+	(iw_handler) wl_escan_get_scan,	/* SIOCGIWSCAN */
+#else
 	(iw_handler) wl_iw_iscan_set_scan,	/* SIOCSIWSCAN */
 	(iw_handler) wl_iw_iscan_get_scan,	/* SIOCGIWSCAN */
+#endif
 #else	/* WIRELESS_EXT > 13 */
 	(iw_handler) NULL,			/* SIOCSIWSCAN */
 	(iw_handler) NULL,			/* SIOCGIWSCAN */
@@ -3522,6 +3534,11 @@ wl_iw_event(struct net_device *dev, wl_event_msg_t *e, void* data)
 			(g_iscan->iscan_state != ISCAN_STATE_IDLE))
 			up(&g_iscan->sysioc_sem);
 		break;
+#ifdef WL_ESCAN
+	case WLC_E_ESCAN_RESULT:
+		WL_TRACE(("event WLC_E_ESCAN_RESULT\n"));
+		wl_escan_event(dev, e, data);
+#endif
 
 	default:
 		/* Cannot translate event */
@@ -3572,6 +3589,7 @@ int wl_iw_get_wireless_stats(struct net_device *dev, struct iw_statistics *wstat
 		goto done;
 
 	rssi = dtoh32(scb_val.val);
+	rssi = MIN(rssi, RSSI_MAXVAL);
 	WL_TRACE(("wl_iw_get_wireless_stats rssi=%d ****** \n", rssi));
 	if (rssi <= WL_IW_RSSI_NO_SIGNAL)
 		wstats->qual.qual = 0;

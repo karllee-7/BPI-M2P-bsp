@@ -3,6 +3,7 @@
 #include <linux/delay.h>
 #include <linux/platform_device.h>
 #include <linux/init.h>
+#include <linux/interrupt.h>
 #include <mach/sys_config.h>
 #include <linux/gpio.h>
 #include <linux/proc_fs.h>
@@ -27,6 +28,45 @@ extern void sunxi_mci_rescan_card(unsigned id, unsigned insert);
 extern int sunxi_usb_disable_hcd(__u32 usbc_no);
 extern int sunxi_usb_enable_hcd(__u32 usbc_no);
 #endif
+
+int sunxi_wlan_get_bus_index(void)
+{
+	if(!wl_info.wifi_used)
+		return -EINVAL;
+	
+	return wl_info.bus_index;
+}
+EXPORT_SYMBOL_GPL(sunxi_wlan_get_bus_index);
+
+int sunxi_wlan_get_oob_irq(void)
+{
+	int host_oob_irq = 0;
+	
+	if(!wl_info.wifi_used || !gpio_is_valid(wl_info.gpio_wlan_hostwake))
+		return 0;
+
+	host_oob_irq = gpio_to_irq(wl_info.gpio_wlan_hostwake);
+	if (IS_ERR_VALUE(host_oob_irq)) 
+		wifi_pm_msg("map gpio [%d] to virq failed, errno = %d\n",
+			wl_info.gpio_wlan_hostwake,host_oob_irq);
+
+	return host_oob_irq;
+}
+EXPORT_SYMBOL_GPL(sunxi_wlan_get_oob_irq);
+
+int sunxi_wlan_get_oob_irq_flags(void)
+{
+	int oob_irq_flags;
+	
+	if(!wl_info.wifi_used)
+		return 0;
+
+	oob_irq_flags = (IRQF_TRIGGER_HIGH | IRQF_SHARED | IRQF_NO_SUSPEND);
+
+	return oob_irq_flags;
+}
+EXPORT_SYMBOL_GPL(sunxi_wlan_get_oob_irq_flags);
+
 
 void wifi_pm_power(int on)
 {
@@ -178,6 +218,13 @@ static int wifi_pm_get_res(void)
 	script_item_u val;
 	struct gpio_config  *gpio_p = NULL;
 
+	type = script_get_item("wifi_para", "wifi_sdc_id", &val);
+	if (SCIRPT_ITEM_VALUE_TYPE_INT != type) {
+		wifi_pm_msg("get wifi_sdc_id failed\n");
+	} else {
+		wl_info.bus_index = val.val;
+	}
+
 	type = script_get_item(wifi_para, "wifi_used", &val);
 	if (SCIRPT_ITEM_VALUE_TYPE_INT != type) {
 		wifi_pm_msg("failed to fetch wifi configuration!\n");
@@ -197,6 +244,14 @@ static int wifi_pm_get_res(void)
 		gpio_p = &val.gpio;
 		wl_info.wl_reg_on = gpio_p->gpio;
 		sunxi_gpio_req(gpio_p);
+	}
+
+	type = script_get_item(wifi_para, "wl_host_wake", &val);
+	if (SCIRPT_ITEM_VALUE_TYPE_PIO!=type)
+		wifi_pm_msg("get wl_host_wake gpio failed\n");
+	else {
+		gpio_p = &val.gpio;
+		wl_info.gpio_wlan_hostwake = gpio_p->gpio;
 	}
 
 	return 0;

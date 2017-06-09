@@ -288,7 +288,7 @@ extern int bcm_iovar_lencheck(const bcm_iovar_t *table, void *arg, int len, bool
 #if defined(WLTINYDUMP) || defined(WLMSG_INFORM) || defined(WLMSG_ASSOC) || \
 	defined(WLMSG_PRPKT) || defined(WLMSG_WSEC)
 extern int bcm_format_ssid(char* buf, const uchar ssid[], uint ssid_len);
-#endif
+#endif 
 #endif	/* BCMDRIVER */
 
 /* Base type definitions */
@@ -907,7 +907,7 @@ bcm_count_leading_zeros(uint32 u32)
 	return zeros;
 #else	/* C equivalent */
 	return C_bcm_count_leading_zeros(u32);
-#endif /* C equivalent */
+#endif  /* C equivalent */
 }
 
 /* INTERFACE: Multiword bitmap based small id allocator. */
@@ -1116,7 +1116,7 @@ dll_delete(dll_t *node_p)
 	node_p->prev_p->next_p = node_p->next_p;
 	node_p->next_p->prev_p = node_p->prev_p;
 }
-#endif /* ! defined(_dll_t_) */
+#endif  /* ! defined(_dll_t_) */
 
 /* Elements managed in a double linked list */
 

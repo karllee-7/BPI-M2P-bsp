@@ -24,7 +24,7 @@ extern int osl_printf(const char *fmt, ...);
 #define RELEASE_PRINT(args)	do { WL_PRINT(args); IO8Log args; } while (0)
 #else
 #define WL_PRINT(args)		do { WL_TIMESTAMP(); printf args; } while (0)
-#endif
+#endif 
 
 #if defined(EVENT_LOG_COMPILE) && defined(WLMSG_SRSCAN)
 #define _WL_SRSCAN(fmt, ...)	EVENT_LOG(EVENT_LOG_TAG_SRSCAN, fmt, ##__VA_ARGS__)
@@ -385,7 +385,7 @@ extern int osl_printf(const char *fmt, ...);
 #endif
 #define WL_PCIE(args)		do {if (wl_msg_level2 & WL_PCIE_VAL) WL_PRINT(args);} while (0)
 #define WL_PCIE_ON()		(wl_msg_level2 & WL_PCIE_VAL)
-#endif
+#endif 
 
 extern uint32 wl_msg_level;
 extern uint32 wl_msg_level2;

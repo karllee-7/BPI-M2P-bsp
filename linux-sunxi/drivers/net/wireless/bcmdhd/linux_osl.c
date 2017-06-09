@@ -11,6 +11,7 @@
 #include <typedefs.h>
 #include <bcmendian.h>
 #include <linuxver.h>
+#include <asm-generic/pci-dma-compat.h> 
 #include <bcmdefs.h>
 
 #if defined(BCM47XX_CA9) && defined(__ARM_ARCH_7A__)
@@ -23,7 +24,6 @@
 #include <bcmutils.h>
 #include <linux/delay.h>
 #include <pcicfg.h>
-#include <asm-generic/pci-dma-compat.h>
 
 
 
@@ -802,7 +802,7 @@ osl_pkt_frmfwder(osl_t *osh, void *skbs, int skb_cnt)
 #if defined(BCMDBG_CTRACE)
 	int i;
 	struct sk_buff *skb;
-#endif
+#endif 
 
 #if defined(BCMDBG_CTRACE)
 	if (skb_cnt > 1) {
@@ -821,7 +821,7 @@ osl_pkt_frmfwder(osl_t *osh, void *skbs, int skb_cnt)
 		ADD_CTRACE(osh, skb, file, line);
 #endif /* BCMDBG_CTRACE */
 	}
-#endif
+#endif 
 
 	atomic_add(skb_cnt, &osh->cmn->pktalloced);
 }
@@ -1352,7 +1352,7 @@ osl_malloc(osl_t *osh, uint size)
 	if (bcm_static_buf)
 	{
 		int i = 0;
-		if ((size >= PAGE_SIZE) && (size <= STATIC_BUF_SIZE))
+		if ((size >= PAGE_SIZE)&&(size <= STATIC_BUF_SIZE))
 		{
 			down(&bcm_static_buf->static_sem);
 
@@ -1659,7 +1659,7 @@ int osl_arch_is_coherent(void)
 	return arch_is_coherent();
 #endif
 }
-#endif
+#endif 
 
 #if defined(BCMASSERT_LOG)
 void
@@ -1684,7 +1684,7 @@ osl_assert(const char *exp, const char *file, int line)
 
 
 }
-#endif
+#endif 
 
 void
 osl_delay(uint usec)

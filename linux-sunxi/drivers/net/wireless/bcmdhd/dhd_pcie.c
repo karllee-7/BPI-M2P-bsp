@@ -515,7 +515,9 @@ dhdpcie_dongle_attach(dhd_bus_t *bus)
 			bus->dongle_ram_base = CR4_43602_RAM_BASE;
 			break;
 		case BCM4349_CHIP_GRPID:
-			bus->dongle_ram_base = CR4_4349_RAM_BASE;
+			/* RAM base changed from 4349c0(revid=9) onwards */
+			bus->dongle_ram_base = ((bus->sih->chiprev < 9) ?
+			CR4_4349_RAM_BASE : CR4_4349_RAM_BASE_FROM_REV_9);
 			break;
 		default:
 			bus->dongle_ram_base = 0;
@@ -2625,7 +2627,7 @@ dhd_bus_devreset(dhd_pub_t *dhdp, uint8 flag)
 						__FUNCTION__, bcmerror));
 					goto done;
 				}
-#endif /* CONFIG_ARCH_MSM */
+#endif  /* CONFIG_ARCH_MSM */
 			}
 
 			bus->dhd->dongle_reset = TRUE;
