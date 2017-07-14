@@ -40,7 +40,7 @@ bootopts=enforcing=1 initcall_debug=0 loglevel=8 init=/init vmalloc=384M panic=1
 # output HDMI 720P (type:3 mode:5)
 # output HDMI 1080P (type:3 mode:10)
 otype=3
-omode=5
+omode=2
 #
 ##
 #
