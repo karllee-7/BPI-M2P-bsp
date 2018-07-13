@@ -333,6 +333,34 @@ void sunxi_update_subsequent_processing(int next_work)
 	return ;
 }
 
+#ifdef BPI
+#else
+int bpi_board_version(void)
+{
+	user_gpio_set_t	gpio_recovery;
+	__u32 gpio_hd;
+	int ret;
+	int gpio_value = 0;
+
+	ret = script_parser_fetch("recovery_para", "version_key", (int *)&gpio_recovery, sizeof(user_gpio_set_t) / 4);
+	if (ret)
+		return -1;
+	gpio_hd = gpio_request(&gpio_recovery, 1);
+	if (gpio_hd) {
+		gpio_value = gpio_read_one_pin_value(gpio_hd, 0);
+		if (gpio_value) {
+			printf("BPI: BPI-M2+ Version V1.1\n");
+			return 1;
+		}
+		else {
+			printf("BPI: BPI-M2+ Version V1.2\n");
+			return 2;
+		}
+	}
+	return 0;
+}
+#endif
+
 //(SUNXI_MBR_MAX_PART_COUNT * (16*2 + 2))
 #define PARTITION_SETS_MAX_SIZE	 1024
 void fastboot_partition_init(void)
@@ -792,6 +820,10 @@ int check_android_misc(void)
 */
 int board_late_init(void)
 {
+#ifdef BPI
+#else
+	bpi_board_version();
+#endif
 	fastboot_partition_init();
 
 #ifdef  CONFIG_ARCH_HOMELET

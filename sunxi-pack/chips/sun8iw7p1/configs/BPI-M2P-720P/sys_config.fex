@@ -100,6 +100,7 @@ gpio1	=  port:PA15<1><default><default><1>
 used =	0
 mode =	2
 recovery_key = port:PL03<0><default><default><default>
+version_key = port:PL00<0><default><default><default>
 
 
 ;---------------------------------------------------------------------------------------------------------
@@ -1194,7 +1195,7 @@ s_uart_rx         = port:PL03<2><default><default><default>
 ;s_rsb_used  --s_rsb0 whether used for arisc
 ;----------------------------------------------------------------------------------
 [s_rsb0]
-s_rsb_used        = 1
+s_rsb_used        = 0
 s_rsb_sck         = port:PL00<2><1><2><default>
 s_rsb_sda         = port:PL01<2><1><2><default>
 
