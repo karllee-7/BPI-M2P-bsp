@@ -2,11 +2,11 @@
 # (c) 2015, 2016, Leo Xu <otakunekop@banana-pi.org.cn>
 # Build script for BPI-M2U-BSP 2016.09.10
 
-TARGET_PRODUCT="astar-m2magic"
-BOARD=BPI-M2M-LCD7
-board="bpi-m2m"
-kernel="3.4.39-BPI-M2M-Kernel"
-MODE=$1
+export TOPDIR=`pwd`
+
+TARGET_BOARD="sinlinx-a33-lcd5"
+
+export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 
 
 cp_download_files()
@@ -57,23 +57,54 @@ R="${SD}/BPI-ROOT"
 	return #SKIP
 }
 
-list_boards() {
-	cat <<-EOT
-	NOTICE:
-	new build.sh default select $BOARD and pack all boards
-	supported boards:
-	EOT
-        (cd sunxi-pack/allwinner/${TARGET_PRODUCT}/configs ; ls -1d BPI* )
-	echo
+#==========================================================================
+build_kernel()
+{
+	echo ""
 }
-
-list_boards
-
-./configure $BOARD
-
-if [ -f env.sh ] ; then
-	. env.sh
+clean_uboot()
+{
+	if [ ! -d "$UBOOT_DIR" ]; then
+		echo "error: uboot dir $UBOOT_DIR not exist."
+		exit -1
+	fi
+	make -C $UBOOT_DIR CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J distclean
+}
+build_uboot()
+{
+	if [ ! -d "$UBOOT_DIR" ]; then
+		echo "error: uboot dir $UBOOT_DIR not exist."
+		exit -1
+	fi
+	make -C $UBOOT_DIR ${UBOOT_CONFIG} CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
+	make -C $UBOOT_DIR all CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
+}
+#==========================================================================
+if [ -d "pack-source/boards/$TARGET_BOARD" ]; then
+	echo "target board is $TARGET_BOARD"
+	export BOARD_TOP="`pwd`/pack-source/boards/$TARGET_BOARD"
+else
+	echo "error: target board $TARGET_BOARD not exist."
+	echo "supported boards are:"
+	(cd pack-source/boards; ls -1d *)
+	exit -1
 fi
+
+if [ -f "$BOARD_TOP/build_env.sh" ];then
+	. $BOARD_TOP/build_env.sh
+else
+	echo "error: cant find $BOARD_TOP/build_env.sh"
+	exit -1
+fi
+#==========================================================================
+clean_uboot
+#build_uboot
+
+
+
+
+#=========================================================================
+exit 1
 
 echo "This tool support following building mode(s):"
 echo "--------------------------------------------------------------------------------"
