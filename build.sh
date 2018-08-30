@@ -3,8 +3,9 @@
 # Build script for BPI-M2U-BSP 2016.09.10
 
 export BOARD="sinlinx-a33-lcd5"
+export BOARD_TOP="`pwd`/pack-source/boards/$BOARD"
 export TOPDIR=`pwd`
-export OUT_DIR="pack-out/$BOARD"
+export OUT_DIR="`pwd`/pack-out/$BOARD"
 
 export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 
@@ -67,7 +68,6 @@ build_uboot()
 	fi
 	make -C $UBOOT_DIR ${UBOOT_CONFIG} CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
 	make -C $UBOOT_DIR all CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
-	cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR
 	echo "build kernel end"
 }
 clean_uboot()
@@ -91,15 +91,6 @@ build_kernel()
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output uImage
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules_install
-	cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
-	cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR
-	cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
-	gzip -c $KERNEL_DIR/usr/initramfs_data.cpio > $OUT_DIR/initramfs_data.cpio.gz
-        mkbootimg --kernel $OUT_DIR/bImage \
-                --ramdisk $OUT_DIR/initramfs_data.cpio.gz \
-                --board 'karl' \
-                --base 0x40000000 \
-                -o $OUT_DIR/boot.img
 
 	echo "build kernel end"
 }
@@ -114,10 +105,49 @@ clean_kernel()
 	rm -rf $KERNEL_DIR/output
 	echo "clean kernel end"
 }
+pack_image()
+{
+	cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR
+	cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
+	cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR
+	cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
+	cp -v $KERNEL_DIR/drivers/arisc/binary/arisc $OUT_DIR/
+	gzip -c $KERNEL_DIR/usr/initramfs_data.cpio > $OUT_DIR/initramfs_data.cpio.gz
+        mkbootimg --kernel $OUT_DIR/bImage \
+                --ramdisk $OUT_DIR/initramfs_data.cpio.gz \
+                --board 'karl' \
+                --base 0x40000000 \
+                -o $OUT_DIR/boot.img
+	cp -v pack-source/common/tools/* $OUT_DIR
+	cp -v $BOARD_TOP/configs/image_linux.cfg $OUT_DIR/image.cfg
+	cp -v $BOARD_TOP/configs/sys_partition_linux.fex $OUT_DIR/sys_partition.fex
+	cp -v $BOARD_TOP/configs/sys_config.fex $OUT_DIR/sys_config.fex
+	cp -v $BOARD_TOP/configs/env.cfg $OUT_DIR/env.cfg
+	cp -v $BOARD_TOP/configs/boot0_nand_sun8iw5p1.bin $OUT_DIR/boot0_nand.bin
+	cp -v $BOARD_TOP/configs/boot0_sdcard_sun8iw5p1.bin $OUT_DIR/boot0_sdcard.bin
+	cp -v $BOARD_TOP/configs/fes1_sun8iw5p1.bin $OUT_DIR/fes1.bin
+	cp -v $BOARD_TOP/configs/boot-resource.ini $OUT_DIR/boot-resource.ini
+	cp -rv $BOARD_TOP/configs/boot-resource $OUT_DIR
+	
+	cd $OUT_DIR
+	busybox unix2dos sys_config.fex
+	busybox unix2dos sys_partition.fex
+	script sys_config.fex
+	script sys_partition.fex
+	cp sys_config.bin config.bin
+	update_boot0 boot0_nand.bin sys_config.bin NAND
+	update_boot0 boot0_sdcard.bin sys_config.bin SDMMC_CARD
+	update_uboot u-boot.bin sys_config.bin
+	update_fes1 fes1.bin sys_config.bin
+	update_mbr sys_partition.bin 4
+	fsbuild boot-resource.ini split_xxxx.fex
+	u_boot_env_gen env.cfg env.bin
+	dragon image.cfg sys_partition.fex
+	cd $TOPDIR
+}
 #==========================================================================
-if [ -d "pack-source/boards/$BOARD" ]; then
+if [ -d "$BOARD_TOP" ]; then
 	echo "target board is $BOARD"
-	export BOARD_TOP="`pwd`/pack-source/boards/$BOARD"
 else
 	echo "error: target board $BOARD not exist."
 	echo "supported boards are:"
@@ -143,7 +173,8 @@ clean_uboot
 
 clean_kernel
 #build_kernel
-
+#set -x
+#pack_image
 #=========================================================================
 exit 1
 
