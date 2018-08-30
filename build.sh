@@ -2,9 +2,9 @@
 # (c) 2015, 2016, Leo Xu <otakunekop@banana-pi.org.cn>
 # Build script for BPI-M2U-BSP 2016.09.10
 
+export BOARD="sinlinx-a33-lcd5"
 export TOPDIR=`pwd`
-
-TARGET_BOARD="sinlinx-a33-lcd5"
+export OUT_DIR="pack-out/$BOARD"
 
 export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 
@@ -58,33 +58,68 @@ R="${SD}/BPI-ROOT"
 }
 
 #==========================================================================
-build_kernel()
-{
-	echo ""
-}
-clean_uboot()
-{
-	if [ ! -d "$UBOOT_DIR" ]; then
-		echo "error: uboot dir $UBOOT_DIR not exist."
-		exit -1
-	fi
-	make -C $UBOOT_DIR CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J distclean
-}
 build_uboot()
 {
+	echo "start build uboot..."
 	if [ ! -d "$UBOOT_DIR" ]; then
 		echo "error: uboot dir $UBOOT_DIR not exist."
 		exit -1
 	fi
 	make -C $UBOOT_DIR ${UBOOT_CONFIG} CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
 	make -C $UBOOT_DIR all CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
+	cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR
+	echo "build kernel end"
+}
+clean_uboot()
+{
+	echo "start clean uboot..."
+	if [ ! -d "$UBOOT_DIR" ]; then
+		echo "error: uboot dir $UBOOT_DIR not exist."
+		exit -1
+	fi
+	make -C $UBOOT_DIR CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J distclean
+	echo "clean clean end"
+}
+build_kernel()
+{
+	echo "start build kernel..."
+	if [ ! -d "$KERNEL_DIR" ]; then
+		echo "error: kernel dir $KERNEL_DIR not exist."
+		exit -1
+	fi
+	make -C $KERNEL_DIR ARCH=$ARCH $KERNEL_CONFIG
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output uImage
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules_install
+	cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
+	cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR
+	cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
+	gzip -c $KERNEL_DIR/usr/initramfs_data.cpio > $OUT_DIR/initramfs_data.cpio.gz
+        mkbootimg --kernel $OUT_DIR/bImage \
+                --ramdisk $OUT_DIR/initramfs_data.cpio.gz \
+                --board 'karl' \
+                --base 0x40000000 \
+                -o $OUT_DIR/boot.img
+
+	echo "build kernel end"
+}
+clean_kernel()
+{
+	echo "start clean kernel..."
+	if [ ! -d "$KERNEL_DIR" ]; then
+		echo "error: kernel dir $KERNEL_DIR not exist."
+		exit -1
+	fi
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J distclean
+	rm -rf $KERNEL_DIR/output
+	echo "clean kernel end"
 }
 #==========================================================================
-if [ -d "pack-source/boards/$TARGET_BOARD" ]; then
-	echo "target board is $TARGET_BOARD"
-	export BOARD_TOP="`pwd`/pack-source/boards/$TARGET_BOARD"
+if [ -d "pack-source/boards/$BOARD" ]; then
+	echo "target board is $BOARD"
+	export BOARD_TOP="`pwd`/pack-source/boards/$BOARD"
 else
-	echo "error: target board $TARGET_BOARD not exist."
+	echo "error: target board $BOARD not exist."
 	echo "supported boards are:"
 	(cd pack-source/boards; ls -1d *)
 	exit -1
@@ -96,12 +131,18 @@ else
 	echo "error: cant find $BOARD_TOP/build_env.sh"
 	exit -1
 fi
+
+if [ -d "$OUT_DIR" ]; then
+	rm -rf "$OUT_DIR"
+fi
+mkdir -p "$OUT_DIR"
+	
 #==========================================================================
 clean_uboot
 #build_uboot
 
-
-
+clean_kernel
+#build_kernel
 
 #=========================================================================
 exit 1
