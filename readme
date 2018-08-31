@@ -1,0 +1,3 @@
+1. boot0_nand.bin boot0_sdcard.bin fes1.bin is different between sinlinx and bpi
+2. script update_boot0 update_fes1 update_mbr u_boot_env_gen ... tools is different
+3. arisc is different

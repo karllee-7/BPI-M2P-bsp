@@ -36,19 +36,19 @@ size = 16384
 [partition]
     name         = boot-res
     size         = 32768
-    downloadfile = "boot-resource.fex"
+    ;downloadfile = "boot-resource.fex"
     user_type    = 0x8000
 
 [partition]
     name         = env
     size         = 32768
-    downloadfile = "env.bin"
+    downloadfile = "env.fex"
 	user_type    = 0x8000
 
 [partition]
     name         = boot
     size         = 32768
-    downloadfile = "boot.img"
+    ;downloadfile = "boot.fex"
 	user_type    = 0x8000
 
 [partition]

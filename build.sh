@@ -107,41 +107,44 @@ clean_kernel()
 }
 pack_image()
 {
-	cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR
-	cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
-	cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR
-	cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
-	cp -v $KERNEL_DIR/drivers/arisc/binary/arisc $OUT_DIR/
-	gzip -c $KERNEL_DIR/usr/initramfs_data.cpio > $OUT_DIR/initramfs_data.cpio.gz
-        mkbootimg --kernel $OUT_DIR/bImage \
-                --ramdisk $OUT_DIR/initramfs_data.cpio.gz \
-                --board 'karl' \
-                --base 0x40000000 \
-                -o $OUT_DIR/boot.img
+	TEST_PACK=/home/karllee/alwinner/lichee/tools/pack
+	#cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR
+	#cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
+	#cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR
+	#cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
+	#cp -v $KERNEL_DIR/drivers/arisc/binary/arisc $OUT_DIR/arisc.bin
+	cp -v 
+	cp -v $BOARD_TOP/configs/arisc.bin $OUT_DIR/arisc.fex
+	cp -v /home/karllee/alwinner/lichee/linux-3.4/arch/arm/boot/Image $OUT_DIR/bImage
+	#gzip -c $KERNEL_DIR/usr/initramfs_data.cpio > $OUT_DIR/rootfs.cpio.gz
+	cp -v /home/karllee/alwinner/lichee/linux-3.4/rootfs.cpio.gz $OUT_DIR/rootfs.cpio.gz
 	cp -v pack-source/common/tools/* $OUT_DIR
 	cp -v $BOARD_TOP/configs/image_linux.cfg $OUT_DIR/image.cfg
-	cp -v $BOARD_TOP/configs/sys_partition_linux.fex $OUT_DIR/sys_partition.fex
-	cp -v $BOARD_TOP/configs/sys_config.fex $OUT_DIR/sys_config.fex
+	#cp -v $BOARD_TOP/configs/sys_partition_linux.fex $OUT_DIR/sys_partition.fex
+	#cp -v $BOARD_TOP/configs/sys_config.fex $OUT_DIR/sys_config.fex
 	cp -v $BOARD_TOP/configs/env.cfg $OUT_DIR/env.cfg
-	cp -v $BOARD_TOP/configs/boot0_nand_sun8iw5p1.bin $OUT_DIR/boot0_nand.bin
-	cp -v $BOARD_TOP/configs/boot0_sdcard_sun8iw5p1.bin $OUT_DIR/boot0_sdcard.bin
-	cp -v $BOARD_TOP/configs/fes1_sun8iw5p1.bin $OUT_DIR/fes1.bin
-	cp -v $BOARD_TOP/configs/boot-resource.ini $OUT_DIR/boot-resource.ini
-	cp -rv $BOARD_TOP/configs/boot-resource $OUT_DIR
+	cp -v $BOARD_TOP/configs/boot0_nand_sun8iw5p1.bin $OUT_DIR/boot0_nand.fex
+	cp -v $BOARD_TOP/configs/boot0_sdcard_sun8iw5p1.bin $OUT_DIR/boot0_sdcard.fex
+	cp -v $BOARD_TOP/configs/fes1_sun8iw5p1.bin $OUT_DIR/fes1.fex
+	cp -v /home/karllee/alwinner/lichee/tools/pack/chips/sun8iw5p1/bin/u-boot-sun8iw5p1.bin $OUT_DIR/u-boot.fex
+	#cp -v $BOARD_TOP/configs/boot-resource.ini $OUT_DIR/boot-resource.ini
+	#cp -rv $BOARD_TOP/configs/boot-resource $OUT_DIR
 	
 	cd $OUT_DIR
-	busybox unix2dos sys_config.fex
-	busybox unix2dos sys_partition.fex
+        mkbootimg --kernel bImage --ramdisk rootfs.cpio.gz --board 'a31' --base 0x40000000 -o boot.img
+	#busybox unix2dos $BOARD_TOP/configs/sys_config.fex sys_config.fex
+	unix2dos -n $TEST_PACK/chips/sun8iw5p1/configs/sinlinx/sys_config.fex sys_config.fex
+	unix2dos -n $BOARD_TOP/configs/sys_partition_linux.fex sys_partition.fex
 	script sys_config.fex
 	script sys_partition.fex
-	cp sys_config.bin config.bin
-	update_boot0 boot0_nand.bin sys_config.bin NAND
-	update_boot0 boot0_sdcard.bin sys_config.bin SDMMC_CARD
-	update_uboot u-boot.bin sys_config.bin
-	update_fes1 fes1.bin sys_config.bin
+	cp -v sys_config.bin config.fex
+	update_boot0 boot0_nand.fex sys_config.bin NAND
+	update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+	update_uboot u-boot.fex sys_config.bin
+	update_fes1 fes1.fex sys_config.bin
 	update_mbr sys_partition.bin 4
-	fsbuild boot-resource.ini split_xxxx.fex
-	u_boot_env_gen env.cfg env.bin
+	#fsbuild boot-resource.ini split_xxxx.fex
+	u_boot_env_gen env.cfg env.fex
 	dragon image.cfg sys_partition.fex
 	cd $TOPDIR
 }
