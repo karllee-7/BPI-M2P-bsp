@@ -36,7 +36,7 @@ size = 16384
 [partition]
     name         = boot-res
     size         = 32768
-    ;downloadfile = "boot-resource.fex"
+    downloadfile = "boot-resource.fex"
     user_type    = 0x8000
 
 [partition]
@@ -49,6 +49,7 @@ size = 16384
     name         = boot
     size         = 32768
     ;downloadfile = "boot.fex"
+    downloadfile = "uImage.fex"
 	user_type    = 0x8000
 
 [partition]

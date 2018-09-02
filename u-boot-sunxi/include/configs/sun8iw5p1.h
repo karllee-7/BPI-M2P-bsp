@@ -64,7 +64,7 @@
 #define CONFIG_NO_BOOT_STANDBY
 #undef FORCE_BOOT_STANDBY
 #define CONFIG_SYS_SDRAM_BASE		     (0x40000000)
-#define CONFIG_SYS_TEXT_BASE		     (0x40900000)
+#define CONFIG_SYS_TEXT_BASE		     (0x4A000000)
 // the sram base address, and the stack address in stage1
 #define CONFIG_SYS_INIT_RAM_ADDR	     (0x00044000)
 #define CONFIG_SYS_INIT_RAM_SIZE	     (60*1024) //0x00048000

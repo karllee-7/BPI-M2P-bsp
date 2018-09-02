@@ -29,7 +29,7 @@ clean_uboot
 
 clean_kernel
 #build_kernel
-#set -x
+set -x
 #pack_image
 #=========================================================================
 exit 1
