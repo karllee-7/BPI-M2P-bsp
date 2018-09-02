@@ -73,7 +73,7 @@ pack_image()
         #TEST_PACK=/home/karllee/alwinner/lichee/tools/pack
         cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR/u-boot.fex
         #cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
-        cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR/uImage.fex
+        #cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR/uImage.fex
         cp -v $KERNEL_DIR/arch/arm/boot/Image $OUT_DIR/bImage
         #cp -v /home/karllee/alwinner/lichee/linux-3.4/arch/arm/boot/Image $OUT_DIR/bImage
         cp -v $KERNEL_DIR/drivers/arisc/binary/arisc $OUT_DIR/arisc.fex
@@ -91,6 +91,7 @@ pack_image()
         #cp -v $BOARD_DIR/configs/u-boot-sun8iw5p1.bin $OUT_DIR/u-boot.fex
         cp -v $BOARD_DIR/configs/boot-resource.ini $OUT_DIR
         cp -rv $BOARD_DIR/configs/boot-resource $OUT_DIR
+        #cp -rv $BOARD_DIR/configs/rootfs.ext4 $OUT_DIR/rootfs.fex
 
         cd $OUT_DIR
         mkbootimg --kernel bImage --ramdisk rootfs.cpio.gz --board 'a31' --base 0x40000000 -o boot.fex
