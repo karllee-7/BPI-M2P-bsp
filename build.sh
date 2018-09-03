@@ -1,39 +1,45 @@
 #!/bin/bash
 
-export BOARD="sinlinx-a33-lcd5"
+set -e
+#set -x
+
 export TOP_DIR=`pwd`
+export BOARD_BASE=$TOP_DIR/pack-source/boards
 #==========================================================================
-if [ ! -d "pack-source/boards/$BOARD" ]; then
-	echo "error: target board $BOARD not exist."
-	echo "supported boards are:"
-	(cd pack-source/boards; ls -1d *)
-	exit -1
+boards_list=(`(cd $BOARD_BASE && ls -d *)`)
+echo "support following boards"
+echo "-----------------------------------------------------------------------------"
+for((i=0;i<${#boards_list[*]};i++)); do
+	echo "$i. ${boards_list[$i]}"
+done
+echo "-----------------------------------------------------------------------------"
+read -p "please choose a board: " i
+if [ -z "$i" ] || [ ! $i -lt ${#boards_list[*]} ]; then
+	echo -e "\033[31merror: invalid value\033[0m"
+	exit 1
 fi
+export BOARD=${boards_list[$i]}
+export BOARD_DIR="$BOARD_BASE/$BOARD"
+export OUT_DIR="$TOP_DIR/pack-out/$BOARD"
 
 if [ ! -f "pack-source/boards/$BOARD/build_env.sh" ]; then
-	echo "error: target board $BOARD/build_env.sh not exist."
+	echo -e "\033[31merror: target board $BOARD/build_env.sh not exist. \033[0m"
 	exit -1
 fi
 
-export BOARD_DIR="$TOP_DIR/pack-source/boards/$BOARD"
-export OUT_DIR="$TOP_DIR/pack-out/$BOARD"
-echo "target board is $BOARD, path is $BOARD_DIR"
+echo -e "\033[33minfo: target board is $BOARD\033[0m"
+echo -e "\033[33minfo: output path is $OUT_DIR\033[0m"
 
 . $BOARD_DIR/build_env.sh
-[ -d "$OUT_DIR" ] && rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR"
-	
 #==========================================================================
-clean_uboot
+#clean_uboot
 #build_uboot
 
-clean_kernel
+#clean_kernel
 #build_kernel
 #set -x
 #pack_image
 #=========================================================================
-exit 1
-
 echo "This tool support following building mode(s):"
 echo "--------------------------------------------------------------------------------"
 echo "	1. Build all, uboot and kernel and pack images."
@@ -46,31 +52,24 @@ echo "	6. update local build to SD with bpi image flashed"
 echo "	7. Clean all build."
 echo "--------------------------------------------------------------------------------"
 
-if [ -z "$MODE" ]; then
-	read -p "Please choose a mode(1-7): " mode
-	echo
-else
-	mode=$MODE
-fi
+read -p "Please choose a mode(1-7): " mode
 
 if [ -z "$mode" ]; then
-        echo -e "\033[31m No build mode choose, using Build all default   \033[0m"
-        mode=1
+        echo -e "\033[31merror: No build mode choose, using Build all default \033[0m"
+	exit 1
 fi
 
-echo -e "\033[31m Now building...\033[0m"
-echo
+echo -e "\033[33mNow building...\033[0m"
 case $mode in
-	1) make && 
-	   make pack && 
-	   cp_download_files;;
-	2) make u-boot;;
-	3) make kernel;;
-	4) make kernel-config;;
-	5) make pack &&
-	   cp_download_files;;
-	6) make install;;
-	7) make clean;;
+	1) build_uboot && 
+	   build_kernel && 
+	   pack_image;;
+	2) build_uboot;;
+	3) build_kernel;;
+	4) ;;
+	5) pack_image;;
+	6) ;;
+	7) clean_all;;
 esac
 echo
 
