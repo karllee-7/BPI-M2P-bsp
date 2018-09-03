@@ -1,0 +1,3 @@
+system=fbdev
+fbdev=/dev/fb0
+wm=default

@@ -4,6 +4,7 @@ export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 export ARCH=arm
 export MACH=sun8iw5p1
 export PLATFORM=linux
+export ROOTFS_SIZE=512
 
 export UBOOT_DIR=$TOP_DIR/u-boot-sunxi
 export UBOOT_CONFIG=sun8iw5p1_config
@@ -12,7 +13,6 @@ export UBOOT_CROSS_COMPILE=arm-linux-gnueabi-
 export KERNEL_DIR=$TOP_DIR/linux-sunxi
 export KERNEL_CONFIG=sun8iw5p1smp_bpi_defconfig
 export KERNEL_CROSS_COMPILE=arm-openwrt-linux-muslgnueabi-
-
 
 export STAGING_DIR=$TOP_DIR/pack-source/pctools/arm-openwrt-linux-muslgnueabi-gcc-5.2.0
 export PATH=$TOP_DIR/pack-source/pctools/arm-openwrt-linux-muslgnueabi-gcc-5.2.0/bin:$PATH
@@ -145,22 +145,24 @@ pack_image()
 	#================================================================================
 	set -x
 	[ ! -d rootfs_tmp ] && mkdir rootfs_tmp
-	dd if=/dev/zero of=rootfs.fex bs=1M count=5
+	dd if=/dev/zero of=rootfs.fex bs=1M count=$ROOTFS_SIZE
 	lodev=`sudo losetup -f --show rootfs.fex`
 	sudo mkfs.ext4 -O ^metadata_csum,^64bit $lodev
 	sudo mount $lodev rootfs_tmp
-
+	sudo cp -a $BOARD_DIR/rootfs/* rootfs_tmp/
+	sudo cp -a $KERNEL_DIR/output/* rootfs_tmp/
 	sudo umount $lodev
 	sudo losetup -d $lodev
 	rm -r rootfs_tmp
 	set +x
 	#================================================================================
 	sed -i 's/^imagename/;imagename/g' image.cfg
-	time_flg=$(date "+%Y%m%d%H%M%S")
-	echo "imagename = ${BOARD}-${time_flg}.img" >> image.cfg
+	image_name="${BOARD}-`date "+%Y%m%d%H%M%S"`.img"
+	echo "imagename=$image_name" >> image.cfg
 	echo "" >> image.cfg
 	#================================================================================
         dragon image.cfg sys_partition.fex
+        echo -e "\033[32m`pwd`/$image_name\033[0m"
         cd $TOP_DIR
         echo -e "\033[33minfo: pack image end\033[0m"
 }

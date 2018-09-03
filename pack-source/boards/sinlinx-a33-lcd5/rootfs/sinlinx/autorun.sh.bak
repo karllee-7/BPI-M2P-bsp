@@ -1,0 +1,137 @@
+#!/bin/sh
+
+source /sinlinx/script_parser.sh
+
+if [ ! -d /system/vendor/ ]; then
+    mkdir -p /system/vendor/
+    ln -s /lib/modules/`uname -r`/ /system/vendor/modules
+    ln -s /boot/*.hcd /system/vendor/modules/
+    ln -s /boot/*.bin /system/vendor/modules/
+    ln -s /boot/*.txt /system/vendor/modules/
+fi
+
+if [ ! -d /data/ ]; then
+    mkdir -p /data
+    touch /data/AWTPucf
+	mkdir -p /data/usbcamera
+	mkdir -p /data/a31scamera
+fi
+
+ROOT_DEVICE="/dev/mmcblk0p7"
+for parm in $(cat /proc/cmdline); do
+    case $parm in
+        root=*)
+            ROOT_DEVICE=`echo $parm | awk -F\= '{print $2}'`
+            ;;  
+    esac
+done
+
+# install nand driver if we boot from sdmmc
+nand_activated=`script_fetch "nand" "activated"`
+if [ $nand_activated -eq 1 ]; then
+    case $ROOT_DEVICE in
+        /dev/mmc*)
+  	    
+        nand_module_path=`script_fetch "nand" "module_path"`
+        if [ -n "$nand_module_path" ]; then
+     	  	 insmod "$nand_module_path"
+  	    fi
+            ;;
+    esac
+
+fi
+
+insmod /system/vendor/modules/disp.ko
+insmod /system/vendor/modules/lcd.ko
+insmod /system/vendor/modules/hdmi.ko
+insmod /system/vendor/modules/8188eu.ko
+
+# insmod ir driver
+ir_activated=`script_fetch "ir" "activated"`
+if [ $ir_activated -eq 1 ]; then
+    ir_module_path=`script_fetch "ir" "module_path"`
+    if [ -n "$ir_module_path" ]; then
+        insmod "$ir_module_path"
+    fi
+fi
+
+# insmod touchscreen driver
+tp_module_path=`script_fetch "tp" "module_path"`
+if [ -n "$tp_module_path" ]; then
+    insmod "$tp_module_path"
+
+    # calibrate touchscreen if need
+    tp_type=`script_fetch "tp" "type"`
+    if [ $tp_type -eq 0 ]; then
+        while true; do
+            ts_calibrate
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+    fi
+else
+    echo "NO!!! touchscreen driver to be insmod"
+fi
+
+insmod /system/vendor/modules/videobuf-core.ko
+insmod /system/vendor/modules/videobuf-dma-contig.ko
+insmod /system/vendor/modules/cam_detect.ko 
+insmod /system/vendor/modules/actuator.ko
+insmod /system/vendor/modules/ad5820_act.ko
+insmod /system/vendor/modules/cci.ko
+insmod /system/vendor/modules/vfe_os.ko
+insmod /system/vendor/modules/vfe_subdev.ko
+insmod /system/vendor/modules/gc0308.ko
+insmod /system/vendor/modules/vfe_v4l2.ko
+
+## net
+ifconfig eth0 up
+udhcpc -i eth0 -n -q -t 6 
+
+## wlan
+#wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf &
+#ifconfig wlan0 up
+#sleep 1
+#iwconfig wlan0 essid "hello"
+#sleep 1
+#udhcpc -i wlan0 -n -q -t 6 
+#sleep 1
+
+## ssh server
+#/usr/local/sbin/sshd
+
+## mdev
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+mdev -s
+
+## tslib
+#export TSLIB_TSEVENTTYPE=H3600
+export TSLIB_CONSOLEDEVICE=none
+export TSLIB_FBDEVICE=/dev/fb0
+export TSLIB_CALIBFILE=/etc/pointercal
+export TSLIB_CONFFILE=/etc/ts.conf
+export TSLIB_PLUGINDIR=/usr/lib/ts
+if [ -e "/dev/input/event3" ]; then
+		export TSLIB_TSDEVICE=/dev/input/event3
+	elif [ -e "/dev/input/event2" ]; then
+		export TSLIB_TSDEVICE=/dev/input/event2
+	elif [ -e "/dev/input/event1" ]; then
+		export TSLIB_TSDEVICE=/dev/input/event1
+fi
+if [ ! -f "/etc/pointercal" ]; then
+    ts_calibrate
+fi
+
+## qt
+export  QTDIR=/opt/qt-4.8.7
+export	QWS_DISPLAY=LinuxFb:/dev/fb0
+export	QWS_SIZE=1024x600
+export  LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+export  QWS_MOUSE_PROTO="tslib:$TSLIB_TSDEVICE"
+
+
+## autorun
+#/Hello-SinLinx -qws &
+#$QTDIR/demos/books/books -qws &
+ts_test
