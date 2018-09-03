@@ -22,6 +22,33 @@ export PATH=$BOARD_DIR/pctools/eDragonEx:$PATH
 export PATH=$BOARD_DIR/pctools/fsbuild200:$PATH
 export PATH=$BOARD_DIR/pctools/android:$PATH
 #=========================================================================
+build_gpu()
+{
+	echo -e "\033[33minfo start build gpu...\033[0m"
+	MALI_DRV_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/mali
+	MALI_UMP_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/ump
+	mali_output_dir=output/lib/modules/3.4.39-BPI-M2M-Kernel/kernel/drivers/gpu
+	make -C ${MALI_UMP_ROOT} CONFIG=ca8-virtex820-m400-1 BUILD=release KDIR=${KERNEL_DIR} \
+		CROSS_COMPILE=$KERNEL_CROSS_COMPILE
+	make -C ${MALI_DRV_ROOT} USING_MMU=1 USING_UMP=0 USING_PMM=1 BUILD=release \
+		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE
+	[ ! -d "$KERNEL_DIR/$mali_output_dir" ] && mkdir -p $KERNEL_DIR/$mali_output_dir
+	cp -v $MALI_UMP_ROOT/ump.ko $KERNEL_DIR/$mali_output_dir
+	cp -v $MALI_DRV_ROOT/mali.ko $KERNEL_DIR/$mali_output_dir
+	echo -e "\033[33minfo build gpu end\033[0m"
+}
+clean_gpu()
+{
+	echo -e "\033[33minfo start clean gpu...\033[0m"
+	MALI_DRV_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/mali
+	MALI_UMP_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/ump
+	make -C ${MALI_UMP_ROOT} CONFIG=ca8-virtex820-m400-1 BUILD=release \
+		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
+	make -C ${MALI_DRV_ROOT} USING_MMU=1 USING_UMP=0 USING_PMM=1 BUILD=release \
+		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
+	echo -e "\033[33minfo clean gpu end\033[0m"
+}
+#=========================================================================
 build_uboot()
 {
         echo -e "\033[33minfo: start build uboot...\033[0m"
@@ -54,6 +81,7 @@ build_kernel()
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output uImage
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules_install
+	build_gpu
 
         echo -e "\033[33minfo: build kernel end\033[0m"
 }
@@ -64,6 +92,7 @@ clean_kernel()
                 echo -e "\033[31merror: kernel dir $KERNEL_DIR not exist.\033[0m"
                 exit -1
         fi
+	clean_gpu
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J distclean
         rm -rf $KERNEL_DIR/output
         echo -e "\033[33minfo: clean kernel end\033[0m"
@@ -74,7 +103,7 @@ pack_image()
         echo -e "\033[33minfo: start pack image...\033[0m"
 	[ -d "$OUT_DIR" ] && rm -rf "$OUT_DIR"
 	mkdir -p "$OUT_DIR"
-
+	#================================================================================
         cp -v $UBOOT_DIR/u-boot.bin $OUT_DIR/u-boot.fex
         #cp -v $KERNEL_DIR/arch/arm/boot/zImage $OUT_DIR
         #cp -v $KERNEL_DIR/arch/arm/boot/uImage $OUT_DIR/uImage.fex
@@ -92,7 +121,7 @@ pack_image()
         cp -v $BOARD_DIR/configs/boot-resource.ini $OUT_DIR
         cp -rv $BOARD_DIR/configs/boot-resource $OUT_DIR
         #cp -rv $BOARD_DIR/configs/rootfs.ext4 $OUT_DIR/rootfs.fex
-
+	#================================================================================
         cd $OUT_DIR
         mkbootimg \
 		--kernel bImage \
@@ -113,12 +142,24 @@ pack_image()
         update_mbr sys_partition.bin 4
         fsbuild boot-resource.ini split_xxxx.fex
         u_boot_env_gen env.cfg env.fex
+	#================================================================================
+	set -x
+	[ ! -d rootfs_tmp ] && mkdir rootfs_tmp
+	dd if=/dev/zero of=rootfs.fex bs=1M count=5
+	lodev=`sudo losetup -f --show rootfs.fex`
+	sudo mkfs.ext4 -O ^metadata_csum,^64bit $lodev
+	sudo mount $lodev rootfs_tmp
 
+	sudo umount $lodev
+	sudo losetup -d $lodev
+	rm -r rootfs_tmp
+	set +x
+	#================================================================================
 	sed -i 's/^imagename/;imagename/g' image.cfg
 	time_flg=$(date "+%Y%m%d%H%M%S")
 	echo "imagename = ${BOARD}-${time_flg}.img" >> image.cfg
 	echo "" >> image.cfg
-
+	#================================================================================
         dragon image.cfg sys_partition.fex
         cd $TOP_DIR
         echo -e "\033[33minfo: pack image end\033[0m"
