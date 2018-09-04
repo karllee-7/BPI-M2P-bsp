@@ -4,7 +4,7 @@ export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 export ARCH=arm
 export MACH=sun8iw5p1
 export PLATFORM=linux
-export ROOTFS_SIZE=512
+export ROOTFS_SIZE=768
 
 export UBOOT_DIR=$TOP_DIR/u-boot-sunxi
 export UBOOT_CONFIG=sun8iw5p1_config
@@ -143,18 +143,20 @@ pack_image()
         fsbuild boot-resource.ini split_xxxx.fex
         u_boot_env_gen env.cfg env.fex
 	#================================================================================
-	set -x
+	#set -x
 	[ ! -d rootfs_tmp ] && mkdir rootfs_tmp
 	dd if=/dev/zero of=rootfs.fex bs=1M count=$ROOTFS_SIZE
 	lodev=`sudo losetup -f --show rootfs.fex`
 	sudo mkfs.ext4 -O ^metadata_csum,^64bit $lodev
 	sudo mount $lodev rootfs_tmp
 	sudo cp -a $BOARD_DIR/rootfs/* rootfs_tmp/
-	sudo cp -a $KERNEL_DIR/output/* rootfs_tmp/
+	[ ! -d rootfs_tmp/lib/modules ] && mkdir -p rootfs_tmp/lib/modules
+	find $KERNEL_DIR/output -name "*.ko" -print0 | xargs -If1 -0 sudo cp f1 rootfs_tmp/lib/modules
+	#sudo cp -a $KERNEL_DIR/output/* rootfs_tmp/
 	sudo umount $lodev
 	sudo losetup -d $lodev
 	rm -r rootfs_tmp
-	set +x
+	#set +x
 	#================================================================================
 	sed -i 's/^imagename/;imagename/g' image.cfg
 	image_name="${BOARD}-`date "+%Y%m%d%H%M%S"`.img"
