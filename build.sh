@@ -42,17 +42,16 @@ echo -e "\033[33minfo: output path is $OUT_DIR\033[0m"
 #=========================================================================
 echo "This tool support following building mode(s):"
 echo "--------------------------------------------------------------------------------"
-echo "	1. Build all, uboot and kernel and pack images."
+echo "	1. Build all."
 echo "	2. Build uboot only."
 echo "	3. Build kernel only."
-echo "	4. kernel configure."
-echo "	5. Pack the builds to target image, this step must execute after u-boot,"
-echo "	   kernel and rootfs build out"
-echo "	6. update local build to SD with bpi image flashed"
-echo "	7. Clean all build."
+echo "	4. Pack the builds to target image."
+echo "	5. Clean all build."
+#echo "	6. kernel configure."
+#echo "	7. update local build to SD with bpi image flashed"
 echo "--------------------------------------------------------------------------------"
 
-read -p "Please choose a mode(1-7): " mode
+read -p "Please choose a mode: " mode
 
 if [ -z "$mode" ]; then
         echo -e "\033[31merror: No build mode choose, using Build all default \033[0m"
@@ -66,10 +65,10 @@ case $mode in
 	   pack_image;;
 	2) build_uboot;;
 	3) build_kernel;;
-	4) ;;
-	5) pack_image;;
-	6) ;;
-	7) clean_all;;
+	4) pack_image;;
+	5) clean_all;;
+	#6) ;;
+	#7) ;;
 esac
 echo
 

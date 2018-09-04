@@ -132,7 +132,7 @@ else
 	echo "no ext memory"
 fi
 
-./home/5cun_linux_tongyong
+#./home/5cun_linux_tongyong
 
 #udhcpc
 #mount -t nfs 192.168.1.110:/home/karllee/share /mnt -o nolock

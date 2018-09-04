@@ -152,6 +152,8 @@ pack_image()
 	sudo cp -a $BOARD_DIR/rootfs/* rootfs_tmp/
 	[ ! -d rootfs_tmp/lib/modules ] && mkdir -p rootfs_tmp/lib/modules
 	find $KERNEL_DIR/output -name "*.ko" -print0 | xargs -If1 -0 sudo cp f1 rootfs_tmp/lib/modules
+	sudo mknod rootfs_tmp/dev/console c 5 1
+	sudo mknod rootfs_tmp/dev/null c 1 3
 	#sudo cp -a $KERNEL_DIR/output/* rootfs_tmp/
 	sudo umount $lodev
 	sudo losetup -d $lodev
