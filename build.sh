@@ -47,7 +47,7 @@ echo "	2. Build uboot only."
 echo "	3. Build kernel only."
 echo "	4. Pack the builds to target image."
 echo "	5. Clean all build."
-#echo "	6. kernel configure."
+echo "	6. kernel configure."
 #echo "	7. update local build to SD with bpi image flashed"
 echo "--------------------------------------------------------------------------------"
 
@@ -67,7 +67,7 @@ case $mode in
 	3) build_kernel;;
 	4) pack_image;;
 	5) clean_all;;
-	#6) ;;
+	6) config_kernel;;
 	#7) ;;
 esac
 echo

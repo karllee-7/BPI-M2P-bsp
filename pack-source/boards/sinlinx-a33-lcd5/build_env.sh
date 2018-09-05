@@ -22,30 +22,29 @@ export PATH=$BOARD_DIR/pctools/eDragonEx:$PATH
 export PATH=$BOARD_DIR/pctools/fsbuild200:$PATH
 export PATH=$BOARD_DIR/pctools/android:$PATH
 #=========================================================================
+export MALI_DRV_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/mali
+export MALI_UMP_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/ump
+export MALI_OUTPUT_DIR=output/lib/modules/3.4.39-BPI-M2M-Kernel/kernel/drivers/gpu
+
 build_gpu()
 {
 	echo -e "\033[33minfo start build gpu...\033[0m"
-	MALI_DRV_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/mali
-	MALI_UMP_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/ump
-	mali_output_dir=output/lib/modules/3.4.39-BPI-M2M-Kernel/kernel/drivers/gpu
 	make -C ${MALI_UMP_ROOT} CONFIG=ca8-virtex820-m400-1 BUILD=release KDIR=${KERNEL_DIR} \
-		CROSS_COMPILE=$KERNEL_CROSS_COMPILE
+		ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE
 	make -C ${MALI_DRV_ROOT} USING_MMU=1 USING_UMP=0 USING_PMM=1 BUILD=release \
-		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE
-	[ ! -d "$KERNEL_DIR/$mali_output_dir" ] && mkdir -p $KERNEL_DIR/$mali_output_dir
-	cp -v $MALI_UMP_ROOT/ump.ko $KERNEL_DIR/$mali_output_dir
-	cp -v $MALI_DRV_ROOT/mali.ko $KERNEL_DIR/$mali_output_dir
+		ARCH=$ARCH KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE
+	[ ! -d "$KERNEL_DIR/$MALI_OUTPUT_DIR" ] && mkdir -p $KERNEL_DIR/$MALI_OUTPUT_DIR
+	cp -v $MALI_UMP_ROOT/ump.ko $KERNEL_DIR/$MALI_OUTPUT_DIR
+	cp -v $MALI_DRV_ROOT/mali.ko $KERNEL_DIR/$MALI_OUTPUT_DIR
 	echo -e "\033[33minfo build gpu end\033[0m"
 }
 clean_gpu()
 {
 	echo -e "\033[33minfo start clean gpu...\033[0m"
-	MALI_DRV_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/mali
-	MALI_UMP_ROOT=$KERNEL_DIR/modules/mali/DX910-SW-99002-r3p2-01rel1/driver/src/devicedrv/ump
 	make -C ${MALI_UMP_ROOT} CONFIG=ca8-virtex820-m400-1 BUILD=release \
-		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
+		KDIR=${KERNEL_DIR} ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
 	make -C ${MALI_DRV_ROOT} USING_MMU=1 USING_UMP=0 USING_PMM=1 BUILD=release \
-		KDIR=${KERNEL_DIR} CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
+		KDIR=${KERNEL_DIR} ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE clean
 	echo -e "\033[33minfo clean gpu end\033[0m"
 }
 #=========================================================================
@@ -56,8 +55,8 @@ build_uboot()
                 echo -e "\033[31merror: uboot dir $UBOOT_DIR not exist.\033[0m"
                 exit -1
         fi
-        make -C $UBOOT_DIR ${UBOOT_CONFIG} CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
-        make -C $UBOOT_DIR all CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J
+        make -C $UBOOT_DIR ARCH=$ARCH CROSS_COMPILE=$UBOOT_CROSS_COMPILE ${UBOOT_CONFIG} -j$J
+        make -C $UBOOT_DIR ARCH=$ARCH CROSS_COMPILE=$UBOOT_CROSS_COMPILE all -j$J
         echo -e "\033[33minfo: build kernel end \033[0m"
 }
 clean_uboot()
@@ -67,7 +66,7 @@ clean_uboot()
                 echo -e "\033[31merror: uboot dir $UBOOT_DIR not exist.\033[0m"
                 exit -1
         fi
-        make -C $UBOOT_DIR CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J distclean
+        make -C $UBOOT_DIR ARCH=$ARCH CROSS_COMPILE=$UBOOT_CROSS_COMPILE -j$J distclean
         echo -e "\033[33minfo: clean clean end\033[0m"
 }
 build_kernel()
@@ -77,13 +76,28 @@ build_kernel()
                 echo -e "\033[31merror: kernel dir $KERNEL_DIR not exist.\033[0m"
                 exit -1
         fi
-        make -C $KERNEL_DIR ARCH=$ARCH $KERNEL_CONFIG
+	if [ ! -f "$KERNEL_DIR/.config" ]; then
+		echo -e "\033[33warning: .config dos not exist, copy $KERNEL_CONFIG to .config\033[0m"
+        	make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE $KERNEL_CONFIG
+	fi
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output uImage
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules
         make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J INSTALL_MOD_PATH=output modules_install
 	build_gpu
 
         echo -e "\033[33minfo: build kernel end\033[0m"
+}
+config_kernel()
+{
+	if [ ! -d "$KERNEL_DIR" ]; then
+                echo -e "\033[31merror: kernel dir $KERNEL_DIR not exist.\033[0m"
+                exit -1
+        fi
+	if [ ! -f "$KERNEL_DIR/.config" ]; then
+		echo -e "\033[33mwarning: .config dos not exist, copy $KERNEL_CONFIG to .config\033[0m"
+		make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE $KERNEL_CONFIG
+        fi
+	make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE menuconfig
 }
 clean_kernel()
 {
@@ -93,7 +107,7 @@ clean_kernel()
                 exit -1
         fi
 	clean_gpu
-        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J distclean
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J clean
         rm -rf $KERNEL_DIR/output
         echo -e "\033[33minfo: clean kernel end\033[0m"
 }
