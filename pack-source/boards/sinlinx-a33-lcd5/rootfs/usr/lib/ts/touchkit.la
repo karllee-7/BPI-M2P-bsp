@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/opt/tslib-1.16-armhf-4.9.4/lib/ts'
+libdir='/home/karllee/source/tslib-1.16/_install/lib/ts'

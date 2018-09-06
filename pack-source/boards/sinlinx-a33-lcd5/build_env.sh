@@ -4,7 +4,6 @@ export J=$(expr `grep ^processor /proc/cpuinfo  | wc -l` \* 2)
 export ARCH=arm
 export MACH=sun8iw5p1
 export PLATFORM=linux
-export ROOTFS_SIZE=768
 
 export UBOOT_DIR=$TOP_DIR/u-boot-sunxi
 export UBOOT_CONFIG=sun8iw5p1_config
@@ -107,7 +106,7 @@ clean_kernel()
                 exit -1
         fi
 	clean_gpu
-        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J clean
+        make -C $KERNEL_DIR ARCH=$ARCH CROSS_COMPILE=$KERNEL_CROSS_COMPILE -j$J distclean
         rm -rf $KERNEL_DIR/output
         echo -e "\033[33minfo: clean kernel end\033[0m"
 }
@@ -134,7 +133,6 @@ pack_image()
         cp -v $BOARD_DIR/configs/fes1_sun8iw5p1.bin $OUT_DIR/fes1.fex
         cp -v $BOARD_DIR/configs/boot-resource.ini $OUT_DIR
         cp -rv $BOARD_DIR/configs/boot-resource $OUT_DIR
-        #cp -rv $BOARD_DIR/configs/rootfs.ext4 $OUT_DIR/rootfs.fex
 	#================================================================================
         cd $OUT_DIR
         mkbootimg \
@@ -159,7 +157,13 @@ pack_image()
 	#================================================================================
 	#set -x
 	[ ! -d rootfs_tmp ] && mkdir rootfs_tmp
-	dd if=/dev/zero of=rootfs.fex bs=1M count=$ROOTFS_SIZE
+	ROOTFS_SIZE=`du -ms $BOARD_DIR/rootfs | awk '{print $1}'`
+	MODULES_SIZE=`du -ms $KERNEL_DIR/output | awk '{print $1}'`
+	ROOTFS_SIZE_NEW=$((($ROOTFS_SIZE+$MODULES_SIZE+128)/16*16))
+	echo -e "\033[33mrootfs size is ${ROOTFS_SIZE}M \033[0m"
+	echo -e "\033[33mmodules size is ${MODULES_SIZE}M \033[0m"
+	echo -e "\033[33mrootfs new size is ${ROOTFS_SIZE_NEW}M \033[0m"
+	dd if=/dev/zero of=rootfs.fex bs=1M count=$ROOTFS_SIZE_NEW
 	lodev=`sudo losetup -f --show rootfs.fex`
 	sudo mkfs.ext4 -O ^metadata_csum,^64bit $lodev
 	sudo mount $lodev rootfs_tmp
